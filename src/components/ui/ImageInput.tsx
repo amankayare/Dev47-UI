@@ -5,6 +5,7 @@ import { Label } from './label';
 import { Link, Upload, Server } from 'lucide-react';
 import FileUpload from './FileUpload';
 import { ensureHttpsProtocol } from '@/utils/urlUtils';
+import { apiAssetUrl } from '@/utils/api';
 import { 
   Select, 
   SelectContent, 
@@ -106,7 +107,7 @@ export default function ImageInput({
           {currentUrl && (
             <div className="mt-2">
               <img
-                src={currentUrl}
+                src={apiAssetUrl(currentUrl)}
                 alt={`${label} preview`}
                 className="w-20 h-20 object-cover rounded-lg border-2 border-slate-200 dark:border-slate-600"
                 onError={(e) => {

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { User, Eye, Github, Terminal, Globe, Star, Award, Code, Cloud, Database, Layers, Server, Cpu, Monitor, Smartphone, Palette, Zap, Shield, Settings } from "lucide-react";
 import { ensureHttpsProtocol } from "@/utils/urlUtils";
 import { formatTextWithLineBreaks, decodeHtmlEntities } from "@/utils/textUtils";
+import { apiAssetUrl, apiUrl } from "@/utils/api";
 
 // Use public folder assets
 const professionaImage = "/Professional-summary.jpg";
@@ -52,7 +53,7 @@ const DynamicAboutContent = () => {
   } = useQuery({
     queryKey: ["/api/about/"],
     queryFn: async (): Promise<AboutData> => {
-      const response = await fetch("/api/about/");
+      const response = await fetch(apiUrl("/api/about/"));
       if (!response.ok) throw new Error("Failed to fetch about data");
       return response.json();
     },
@@ -62,7 +63,7 @@ const DynamicAboutContent = () => {
   const { data: certifications, isLoading: certificationsLoading } = useQuery({
     queryKey: ["/api/certifications/"],
     queryFn: async (): Promise<Certification[]> => {
-      const response = await fetch("/api/certifications/");
+      const response = await fetch(apiUrl("/api/certifications/"));
       if (!response.ok) throw new Error("Failed to fetch certifications");
       return response.json();
     },
@@ -72,7 +73,7 @@ const DynamicAboutContent = () => {
   const { data: technicalExpertise, isLoading: techSkillsLoading } = useQuery({
     queryKey: ["/api/technical-skills/"],
     queryFn: async (): Promise<TechnicalSkill[]> => {
-      const response = await fetch("/api/technical-skills/");
+      const response = await fetch(apiUrl("/api/technical-skills/"));
       if (!response.ok) throw new Error("Failed to fetch technical skills");
       return response.json();
     },
@@ -277,7 +278,7 @@ const DynamicAboutContent = () => {
             <div className="w-full h-[300px] sm:h-[400px] gradient-bg rounded-2xl shadow-2xl relative flex items-center justify-center overflow-hidden">
               <a href="http://www.freepik.com">
                 <img
-                  src={about.cover_image || professionaImage}
+                  src={apiAssetUrl(about.cover_image || professionaImage)}
                   alt={about.name}
                   className="w-full h-full object-cover object-top rounded-2xl"
                 />

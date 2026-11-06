@@ -1,4 +1,5 @@
 import { QueryClient } from "@tanstack/react-query";
+import { apiUrl } from "@/utils/api";
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -19,7 +20,7 @@ export async function apiRequest<T = unknown>(
   url: string,
   data?: unknown,
 ): Promise<T> {
-  const res = await fetch(url, {
+  const res = await fetch(apiUrl(url), {
     method,
     headers: data ? { "Content-Type": "application/json" } : undefined,
     body: data ? JSON.stringify(data) : undefined,

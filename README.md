@@ -35,15 +35,16 @@ The application will be available at http://localhost:3000
 npm run build
 ```
 
-Build files will be generated in the `../dist/web` directory.
+Build files will be generated in this project's `dist/` directory.
 
 ### Environment Variables
 
 Create a `.env` file in this directory:
 
 ```env
-VITE_API_BASE_URL=http://localhost:5000/api
+VITE_API_BASE_URL=
 VITE_APP_ENV=development
+API_PROXY_TARGET=http://localhost:5000
 ```
 
 ## Project Structure
@@ -60,13 +61,16 @@ src/
 
 ## API Integration
 
-The frontend communicates with the Flask backend via REST API. All API calls are centralized in `src/utils/api.ts`.
+The frontend communicates with the backend via REST API. API requests use
+`src/utils/api.ts` to apply `VITE_API_BASE_URL`. Leave it empty during local
+development to use the Vite `/api` proxy; set it to the backend origin or API
+base URL when deploying the frontend separately.
 
 ## Deployment
 
 ### Static Hosting (Recommended)
 - Build the project: `npm run build`
-- Deploy the `../dist/web` folder to:
+- Deploy the `dist/` folder to:
   - Netlify
   - Vercel
   - AWS S3 + CloudFront

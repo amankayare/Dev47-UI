@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import BlogLayout from '../components/BlogLayout';
 import Comments from '../components/Comments';
 import { useBlogContentStyles } from '@/hooks/useBlogStyles';
+import { apiUrl } from '@/utils/api';
 
 export interface BlogPost {
   id: number;
@@ -40,7 +41,7 @@ export default function BlogPost() {
     queryKey: [`/api/blogs/${id}`],
     queryFn: async (): Promise<BlogPost> => {
       console.log('🔍 Fetching blog post:', `/api/blogs/${id}`);
-      const response = await fetch(`/api/blogs/${id}`);
+      const response = await fetch(apiUrl(`/api/blogs/${id}`));
       if (!response.ok) {
         console.error('❌ Failed to fetch blog post:', response.status, response.statusText);
         throw new Error(`Failed to fetch blog post: ${response.status}`);
@@ -58,7 +59,7 @@ export default function BlogPost() {
     queryKey: ["relatedPosts", id],
     queryFn: async () => {
       if (!id) return [];
-      const response = await fetch(`/api/blogs/${id}/related`);
+      const response = await fetch(apiUrl(`/api/blogs/${id}/related`));
       if (!response.ok) return [];
       const data = await response.json();
       // Map to expected shape for BlogLayout

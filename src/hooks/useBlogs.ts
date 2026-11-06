@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { apiUrl } from '@/utils/api';
 
 interface Blog {
   id: number;
@@ -31,7 +32,7 @@ export const useBlogs = ({ search = '', selectedCategory, selectedTag, pageSize 
     queryKey: ['blogs-all'],
     queryFn: async (): Promise<Blog[]> => {
       // Fetch all blogs at once for frontend pagination
-      const response = await fetch(`/api/blogs?page_size=1000`); // Get a very large number to get all blogs
+      const response = await fetch(apiUrl(`/api/blogs?page_size=1000`)); // Get a very large number to get all blogs
       if (!response.ok) throw new Error('Failed to fetch blogs');
       const data = await response.json();
       return data.blogs || data; // Handle both paginated and non-paginated responses

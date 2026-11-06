@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Upload, X, Eye, Trash2 } from 'lucide-react';
 import { useMutation } from '@tanstack/react-query';
+import { apiAssetUrl, apiUrl } from '@/utils/api';
 
 interface FileUploadProps {
   label?: string;
@@ -56,7 +57,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
       // Use Polyglot proxy for everything except profile/resume (or we can use it for everything)
       const endpoint = '/api/polyglot/stage';
       
-      const response = await fetch(endpoint, {
+      const response = await fetch(apiUrl(endpoint), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -93,7 +94,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
   const deleteMutation = useMutation({
     mutationFn: async (filename: string) => {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/upload/delete/${filename}`, {
+      const response = await fetch(apiUrl(`/api/upload/delete/${filename}`), {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -206,7 +207,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
              </span>
           </div>
           <img
-            src={preview}
+            src={apiAssetUrl(preview)}
             alt="Preview"
             className="w-full h-48 object-cover rounded-lg"
           />
@@ -215,7 +216,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
               type="button"
               variant="secondary"
               size="sm"
-              onClick={() => window.open(preview, '_blank')}
+              onClick={() => window.open(apiAssetUrl(preview), '_blank')}
               className="bg-white/80 hover:bg-white/90"
             >
               <Eye className="w-4 h-4" />

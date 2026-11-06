@@ -14,7 +14,7 @@ import { ArrowLeft, Save, Sparkles, Code2, Star, Eye, Plus, X, ExternalLink } fr
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useAIConvert } from '@/hooks/useAIConvert';
 import { AIContentDraft } from '@/components/ui/AIContentDraft';
-import { apiGet, apiPost, apiPut, apiDelete } from '@/utils/api';
+import { apiGet, apiPost, apiPut, apiDelete, apiUrl } from '@/utils/api';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import ImageInput from '@/components/ui/ImageInput';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -89,7 +89,7 @@ export default function BlogEditor() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('/api/blog-categories');
+        const res = await fetch(apiUrl('/api/blog-categories'));
         const data = await res.json();
         setCategories(data);
       } catch (err) {

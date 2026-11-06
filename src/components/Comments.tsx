@@ -19,6 +19,7 @@ import {
   ChevronUp 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { apiUrl } from '@/utils/api';
 
 interface Comment {
   id: number;
@@ -68,7 +69,7 @@ export default function Comments({ blogId }: CommentsProps) {
   const { data: comments = [], isLoading } = useQuery<Comment[]>({
     queryKey: ['comments', blogId],
     queryFn: async () => {
-      const response = await fetch(`/api/blogs/${blogId}/comments`);
+      const response = await fetch(apiUrl(`/api/blogs/${blogId}/comments`));
       if (!response.ok) {
         throw new Error('Failed to fetch comments');
       }
@@ -81,7 +82,7 @@ export default function Comments({ blogId }: CommentsProps) {
   const addCommentMutation = useMutation({
     mutationFn: async ({ content, parentId }: { content: string; parentId?: number }) => {
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/blogs/${blogId}/comments`, {
+      const response = await fetch(apiUrl(`/api/blogs/${blogId}/comments`), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

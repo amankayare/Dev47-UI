@@ -55,6 +55,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { normalizeSocialLinks } from "@/utils/urlUtils";
+import { apiAssetUrl } from "@/utils/api";
 import { formatTextWithLineBreaks, decodeHtmlEntities } from "@/utils/textUtils";
 // Contact form schema will be imported from ContactForm component
 import { useForm, UseFormReturn } from "react-hook-form";
@@ -638,7 +639,7 @@ const Portfolio = () => {
                 {/* Inner circle that holds the image */}
                 <div className="w-[90%] h-[90%] rounded-full overflow-hidden shadow-lg relative z-10">
                   <img
-                    src={aboutData?.photo || userImage}
+                    src={apiAssetUrl(aboutData?.photo || userImage)}
                     alt={aboutData?.name || "Aman"}
                     className="w-full h-full object-cover rounded-full"
                   />

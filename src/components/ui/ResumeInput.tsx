@@ -4,6 +4,7 @@ import { Input } from './input';
 import { Label } from './label';
 import { Link, Upload, FileText, Eye } from 'lucide-react';
 import ResumeUpload from './ResumeUpload';
+import { apiAssetUrl } from '@/utils/api';
 
 interface ResumeInputProps {
   label: string;
@@ -142,7 +143,7 @@ export default function ResumeInput({
                     type="button"
                     variant="secondary"
                     size="sm"
-                    onClick={() => window.open(currentUrl, '_blank')}
+                    onClick={() => window.open(apiAssetUrl(currentUrl), '_blank')}
                     className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-3 py-2 flex-1 sm:flex-none"
                   >
                     <Eye className="w-4 h-4 mr-2" />

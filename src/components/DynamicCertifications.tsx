@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Award, Calendar, ExternalLink, Globe, Code, Terminal, Star, Briefcase } from "lucide-react";
+import { apiUrl } from "@/utils/api";
 
 interface Certification {
   id: number;
@@ -22,7 +23,7 @@ const DynamicCertificationsContent = () => {
   const { data: certifications = [], isLoading, error } = useQuery({
     queryKey: ['/api/certifications/'],
     queryFn: async (): Promise<Certification[]> => {
-      const response = await fetch('/api/certifications/');
+      const response = await fetch(apiUrl('/api/certifications/'));
       if (!response.ok) throw new Error('Failed to fetch certifications');
       return response.json();
     },

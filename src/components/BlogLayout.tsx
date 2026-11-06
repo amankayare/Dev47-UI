@@ -17,6 +17,7 @@ import { ArrowLeft, Calendar, Clock, User, Share2, BookOpen, ExternalLink, Trend
 import { useTheme } from '@/hooks/use-theme';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { apiAssetUrl, apiUrl } from '@/utils/api';
 
 interface BlogAuthor {
   id: number;
@@ -47,7 +48,7 @@ const usePopularTags = () => {
   return useQuery<PopularTagsResponse>({
     queryKey: ['popular-tags'],
     queryFn: async (): Promise<PopularTagsResponse> => {
-      const response = await fetch('/api/blogs/tags/popular');
+      const response = await fetch(apiUrl('/api/blogs/tags/popular'));
       if (!response.ok) {
         throw new Error('Failed to fetch popular tags');
       }
@@ -201,7 +202,7 @@ export default function BlogLayout({
   useEffect(() => {
     async function fetchBlogs() {
       try {
-        const response = await fetch('/api/blogs/');
+        const response = await fetch(apiUrl('/api/blogs/'));
         if (!response.ok) return;
         const blogs = await response.json();
         const featured = blogs
@@ -271,7 +272,7 @@ export default function BlogLayout({
   // Loading state
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen hero-squares bg-background">
         <BlogLayoutSkeleton />
       </div>
     );
@@ -722,7 +723,7 @@ function BlogHero({ title, excerpt, featured, author, date, readingTime, tags, c
             <div className="flex items-center gap-2.5 bg-background/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/10">
               {author.avatar ? (
                 <img
-                  src={author.avatar}
+                  src={apiAssetUrl(author.avatar || '')}
                   alt={author.name}
                   className="w-7 h-7 rounded-full ring-2 ring-primary/20 object-cover"
                 />
@@ -794,7 +795,7 @@ function BlogCoverImage({ src, alt }: BlogCoverImageProps) {
   return (
     <div className="relative aspect-video overflow-hidden bg-muted">
       <img
-        src={src}
+        src={apiAssetUrl(src || '')}
         alt={alt}
         className="object-cover w-full h-full transition-transform duration-700 hover:scale-105"
         loading="lazy"
@@ -843,38 +844,76 @@ function BlogLayoutSkeleton() {
   return (
     <>
       {/* Header Skeleton */}
-      <header className="border-b border-border/40 h-16 bg-background">
-        <div className="container flex h-16 items-center">
-          <div className="h-8 w-24 bg-muted animate-pulse rounded" />
+      <header className="sticky top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-xl">
+        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between gap-4 px-4 sm:h-[72px] sm:px-6 lg:px-8">
+          <div className="h-10 w-32 animate-pulse rounded bg-muted sm:h-12 sm:w-40 md:h-14" />
+          <div className="flex items-center gap-3">
+            <div className="hidden h-9 w-24 animate-pulse rounded-full bg-muted sm:block" />
+            <div className="hidden h-9 w-24 animate-pulse rounded-full bg-muted sm:block" />
+            <div className="h-10 w-10 animate-pulse rounded-full bg-muted" />
+          </div>
         </div>
       </header>
 
       {/* Content Skeleton */}
-      <main className="container py-8 max-w-4xl">
-        <div className="space-y-8">
-          {/* Title skeleton */}
-          <div className="space-y-4">
-            <div className="h-12 bg-muted animate-pulse rounded w-3/4" />
-            <div className="h-6 bg-muted animate-pulse rounded w-full" />
-            <div className="h-6 bg-muted animate-pulse rounded w-2/3" />
-          </div>
+      <main className="container mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:gap-12">
+          <article className="order-1 lg:col-span-9">
+            <div className="space-y-8 rounded-xl border border-border/40 bg-background/40 p-6 shadow-2xl backdrop-blur-xl lg:p-10">
+              {/* Blog hero skeleton */}
+              <div className="space-y-6 pt-2">
+                <div className="flex gap-3">
+                  <div className="h-7 w-24 animate-pulse rounded-full bg-muted" />
+                  <div className="h-7 w-20 animate-pulse rounded-full bg-muted" />
+                </div>
+                <div className="space-y-4">
+                  <div className="h-10 w-4/5 animate-pulse rounded bg-muted sm:h-12" />
+                  <div className="h-5 w-full animate-pulse rounded bg-muted" />
+                  <div className="h-5 w-2/3 animate-pulse rounded bg-muted" />
+                </div>
+                <div className="flex flex-wrap items-center gap-4">
+                  <div className="h-4 w-28 animate-pulse rounded bg-muted" />
+                  <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+                  <div className="h-4 w-20 animate-pulse rounded bg-muted" />
+                </div>
+              </div>
 
-          {/* Meta skeleton */}
-          <div className="flex gap-4">
-            <div className="h-4 w-20 bg-muted animate-pulse rounded" />
-            <div className="h-4 w-24 bg-muted animate-pulse rounded" />
-            <div className="h-4 w-16 bg-muted animate-pulse rounded" />
-          </div>
+              {/* Cover image skeleton */}
+              <div className="aspect-video w-full animate-pulse rounded-xl bg-muted" />
 
-          {/* Image skeleton */}
-          <div className="aspect-video bg-muted animate-pulse rounded-lg" />
+              <div className="h-px w-full bg-border/50" />
 
-          {/* Content skeleton */}
-          <div className="space-y-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-4 bg-muted animate-pulse rounded w-full" />
+              {/* Article body skeleton */}
+              <div className="space-y-4 px-2">
+                {Array.from({ length: 10 }).map((_, i) => (
+                  <div
+                    key={i}
+                    className={`h-4 animate-pulse rounded bg-muted ${i % 4 === 3 ? 'w-2/3' : 'w-full'}`}
+                  />
+                ))}
+              </div>
+            </div>
+          </article>
+
+          {/* Sidebar skeleton */}
+          <aside className="order-2 space-y-6 lg:col-span-3">
+            {[0, 1, 2].map((section) => (
+              <div
+                key={section}
+                className="space-y-5 rounded-2xl border border-border/50 bg-card/40 p-6"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="h-9 w-9 animate-pulse rounded-xl bg-muted" />
+                  <div className="h-5 w-32 animate-pulse rounded bg-muted" />
+                </div>
+                <div className="space-y-3">
+                  {[0, 1, 2].map((item) => (
+                    <div key={item} className="h-4 w-full animate-pulse rounded bg-muted" />
+                  ))}
+                </div>
+              </div>
             ))}
-          </div>
+          </aside>
         </div>
       </main>
     </>

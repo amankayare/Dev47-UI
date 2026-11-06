@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { apiUrl } from '@/utils/api';
 
 const ApiDebugger = () => {
   const [testResults, setTestResults] = useState<string[]>([]);
@@ -14,7 +15,7 @@ const ApiDebugger = () => {
     addResult(`🔍 Testing ${name} endpoint: ${endpoint}`);
     
     try {
-      const response = await fetch(endpoint);
+      const response = await fetch(apiUrl(endpoint));
       addResult(`📡 Status: ${response.status} ${response.statusText}`);
       addResult(`📡 Headers: ${JSON.stringify(Object.fromEntries(response.headers.entries()))}`);
       

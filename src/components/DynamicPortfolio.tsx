@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { FolderOpen, Search, ExternalLink, Github, Eye, Calendar } from "lucide-react";
+import { apiUrl } from "@/utils/api";
 
 interface Project {
   id: number;
@@ -43,7 +44,7 @@ const DynamicProjectsContent = ({ searchQuery, setSearchQuery }: ProjectsContent
   const { data: projects = [], isLoading: projectsLoading, error } = useQuery({
     queryKey: ['/api/projects'],
     queryFn: async (): Promise<Project[]> => {
-      const response = await fetch('/api/projects');
+      const response = await fetch(apiUrl('/api/projects'));
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || 'Failed to fetch projects');

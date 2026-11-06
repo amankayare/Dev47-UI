@@ -9,7 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Star, Search, X, Eye } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
-import { apiGet, apiDelete } from '@/utils/api';
+import { apiGet, apiDelete, apiAssetUrl, apiUrl } from '@/utils/api';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 
@@ -50,7 +50,7 @@ export default function BlogsManagement() {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('/api/blog-categories');
+        const res = await fetch(apiUrl('/api/blog-categories'));
         const data = await res.json();
         setCategories(data);
       } catch (err) {
@@ -360,7 +360,7 @@ export default function BlogsManagement() {
                     {blog.cover_image ? (
                       <>
                         <img 
-                          src={blog.cover_image} 
+                          src={apiAssetUrl(blog.cover_image)}
                           alt={blog.title}
                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                           onError={(e) => {

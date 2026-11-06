@@ -7,6 +7,53 @@ export class AuthError extends Error {
   }
 }
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').replace(/\/+$/, '');
+
+export const apiUrl = (path: string): string => {
+  if (!path) {
+    return path;
+  }
+
+  if (/^[a-z][a-z\d+.-]*:/i.test(path)) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  if (!API_BASE_URL) {
+    return normalizedPath;
+  }
+
+  if (API_BASE_URL.endsWith('/api') &&
+      (normalizedPath === '/api' || normalizedPath.startsWith('/api/'))) {
+    return `${API_BASE_URL}${normalizedPath.slice(4)}`;
+  }
+
+  return `${API_BASE_URL}${normalizedPath}`;
+};
+
+export const apiAssetUrl = (path: string): string => {
+  if (!path) {
+    return path;
+  }
+
+  if (/^[a-z][a-z\d+.-]*:/i.test(path)) {
+    return path;
+  }
+
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  if (!API_BASE_URL) {
+    return normalizedPath;
+  }
+  if (!normalizedPath.startsWith('/static/uploads/')) {
+    return normalizedPath;
+  }
+
+  const backendOrigin = API_BASE_URL.endsWith('/api')
+    ? API_BASE_URL.slice(0, -4)
+    : API_BASE_URL;
+  return `${backendOrigin}${normalizedPath}`;
+};
+
 export const handleTokenExpiration = (errorMessage?: string) => {
   localStorage.removeItem('token');
   localStorage.removeItem('user');
@@ -36,7 +83,7 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
     ...options.headers,
   };
 
-  const response = await fetch(url, {
+  const response = await fetch(apiUrl(url), {
     ...options,
     headers,
   });

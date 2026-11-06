@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useTheme } from '@/hooks/use-theme';
 import { Home } from 'lucide-react';
+import { apiUrl } from '@/utils/api';
 
 interface RegisterData {
   username: string;
@@ -42,7 +43,7 @@ export default function Register() {
 
   const registerMutation = useMutation({
     mutationFn: async (data: Omit<RegisterData, 'confirmPassword'>): Promise<RegisterResponse> => {
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(apiUrl('/api/auth/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),

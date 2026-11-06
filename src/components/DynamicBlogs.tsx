@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { BookOpen, Search, Calendar, Clock, User, ExternalLink } from "lucide-react";
+import { apiAssetUrl, apiUrl } from "@/utils/api";
 
 interface BlogTag {
   id: number;
@@ -41,7 +42,7 @@ const DynamicBlogsContent = ({ blogSearchQuery, setBlogSearchQuery }: BlogsConte
   const { data: blogs = [], isLoading, error } = useQuery({
     queryKey: ['/api/blogs/'],
     queryFn: async (): Promise<Blog[]> => {
-      const response = await fetch('/api/blogs/');
+      const response = await fetch(apiUrl('/api/blogs/'));
       if (!response.ok) throw new Error('Failed to fetch blogs');
       return response.json();
     },
@@ -196,7 +197,7 @@ const DynamicBlogsContent = ({ blogSearchQuery, setBlogSearchQuery }: BlogsConte
               <div className="h-48 overflow-hidden">
                 {blog.cover_image ? (
                   <img 
-                    src={blog.cover_image} 
+                    src={apiAssetUrl(blog.cover_image || '')}
                     alt={blog.title}
                     className="w-full h-full object-cover"
                     onError={(e) => {

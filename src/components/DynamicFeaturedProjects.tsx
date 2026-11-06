@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { FolderOpen, ExternalLink, Github, Eye, Zap, Globe, Terminal } from "lucide-react";
+import { apiAssetUrl, apiUrl } from "@/utils/api";
 
 interface Project {
   id: number;
@@ -29,7 +30,7 @@ const DynamicFeaturedProjects = ({ onViewAllClick }: DynamicFeaturedProjectsProp
   const { data: featuredProjects = [], isLoading: featuredLoading, error } = useQuery({
     queryKey: ['/api/projects/featured'],
     queryFn: async (): Promise<Project[]> => {
-      const response = await fetch('/api/projects/featured');
+      const response = await fetch(apiUrl('/api/projects/featured'));
       if (!response.ok) {
         const error = await response.json().catch(() => ({}));
         throw new Error(error.message || 'Failed to fetch featured projects');
@@ -142,7 +143,7 @@ const DynamicFeaturedProjects = ({ onViewAllClick }: DynamicFeaturedProjectsProp
               <div className={`w-full h-48 bg-gradient-to-br ${getGradient(index)} flex items-center justify-center relative overflow-hidden`}>
                 {project.image ? (
                   <img 
-                    src={project.image} 
+                    src={apiAssetUrl(project.image || '')}
                     alt={project.title}
                     className="w-full h-full object-cover"
                   />

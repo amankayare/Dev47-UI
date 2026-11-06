@@ -38,6 +38,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { apiUrl } from '@/utils/api';
 
 interface UserProfile {
   id: number;
@@ -77,7 +78,7 @@ export default function UserProfile() {
     queryKey: ['user-profile'],
     queryFn: async (): Promise<UserProfile> => {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth/profile', {
+      const response = await fetch(apiUrl('/api/auth/profile'), {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -117,7 +118,7 @@ export default function UserProfile() {
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { username: string; email: string }) => {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth/profile', {
+      const response = await fetch(apiUrl('/api/auth/profile'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +167,7 @@ export default function UserProfile() {
   const changePasswordMutation = useMutation({
     mutationFn: async (data: { currentPassword: string; newPassword: string }) => {
       const token = localStorage.getItem('token');
-      const response = await fetch('/api/auth/change-password', {
+      const response = await fetch(apiUrl('/api/auth/change-password'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { Button } from './button';
 import { Label } from './label';
 import { Trash2, Upload, FileText, Eye, Download } from 'lucide-react';
+import { apiAssetUrl, apiUrl } from '@/utils/api';
 
 interface ResumeUploadProps {
   label?: string;
@@ -37,7 +38,7 @@ export default function ResumeUpload({
       formData.append('file', file);
 
       const token = localStorage.getItem('token');
-      const response = await fetch(`/api/resume/upload`, {
+      const response = await fetch(apiUrl(`/api/resume/upload`), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -118,7 +119,7 @@ export default function ResumeUpload({
       const filename = preview.split('/').pop();
       if (filename) {
         const token = localStorage.getItem('token');
-        fetch(`/api/resume/delete/${filename}`, {
+        fetch(apiUrl(`/api/resume/delete/${filename}`), {
           method: 'DELETE',
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -177,7 +178,7 @@ export default function ResumeUpload({
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={() => window.open(preview, '_blank')}
+                onClick={() => window.open(apiAssetUrl(preview), '_blank')}
                 className="bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/30 dark:hover:bg-blue-900/50 px-3 py-2"
               >
                 <Eye className="w-4 h-4 mr-2" />

@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, MapPin, Calendar, Terminal, Award, Star, Zap } from "lucide-react";
+import { apiUrl } from "@/utils/api";
 
 interface Experience {
   id: number;
@@ -22,7 +23,7 @@ const DynamicExperienceContent = () => {
   const { data: experiences, isLoading, error } = useQuery({
     queryKey: ['/api/experiences/'],
     queryFn: async (): Promise<Experience[]> => {
-      const response = await fetch('/api/experiences/');
+      const response = await fetch(apiUrl('/api/experiences/'));
       if (!response.ok) throw new Error('Failed to fetch experiences');
       const data = await response.json();
       // Ensure we always return an array

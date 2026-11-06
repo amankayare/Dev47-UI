@@ -39,6 +39,7 @@ import {
 import { useTheme } from '@/hooks/use-theme';
 import { useToast } from '@/hooks/use-toast';
 import { useBlogs } from '@/hooks/useBlogs';
+import { apiAssetUrl, apiUrl } from '@/utils/api';
 
 interface Blog {
   id: number;
@@ -97,7 +98,7 @@ function BlogCard({
       <div className="relative aspect-video overflow-hidden bg-muted flex-shrink-0">
         {blog.cover_image && !imgError ? (
           <img
-            src={blog.cover_image}
+            src={apiAssetUrl(blog.cover_image || '')}
             alt={blog.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={() => setImgError(true)}
@@ -323,7 +324,7 @@ export default function BlogHome() {
   } = useQuery({
     queryKey: ['/api/blog-categories'],
     queryFn: async (): Promise<Category[]> => {
-      const response = await fetch('/api/blog-categories');
+      const response = await fetch(apiUrl('/api/blog-categories'));
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json();
     },
