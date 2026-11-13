@@ -55,7 +55,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { normalizeSocialLinks } from "@/utils/urlUtils";
-import { apiAssetUrl } from "@/utils/api";
+import { apiAssetUrl, apiUrl } from "@/utils/api";
 import { formatTextWithLineBreaks, decodeHtmlEntities } from "@/utils/textUtils";
 // Contact form schema will be imported from ContactForm component
 import { useForm, UseFormReturn } from "react-hook-form";
@@ -864,12 +864,12 @@ const Portfolio = () => {
   const ResumeContent = () => {
     const handleDownloadPDF = () => {
       // Use the resume API endpoint for downloading
-      window.open('/api/resume/', '_blank');
+      window.open(apiUrl('/api/resume'), '_blank');
     };
 
     const handleViewOnline = () => {
       // Use the resume API endpoint for viewing
-      window.open('/api/resume/view', '_blank');
+      window.open(apiUrl('/api/resume/view'), '_blank');
     };
 
     return (

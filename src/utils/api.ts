@@ -18,7 +18,12 @@ export const apiUrl = (path: string): string => {
     return path;
   }
 
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // Normalize path and strip trailing slashes before query params or at end
+  let normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const [pathname, ...queryParts] = normalizedPath.split('?');
+  const cleanPathname = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  normalizedPath = queryParts.length > 0 ? `${cleanPathname}?${queryParts.join('?')}` : cleanPathname;
+
   if (!API_BASE_URL) {
     return normalizedPath;
   }
@@ -40,7 +45,12 @@ export const apiAssetUrl = (path: string): string => {
     return path;
   }
 
-  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  // Normalize path and strip trailing slashes before query params or at end
+  let normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  const [pathname, ...queryParts] = normalizedPath.split('?');
+  const cleanPathname = pathname.length > 1 ? pathname.replace(/\/+$/, '') : pathname;
+  normalizedPath = queryParts.length > 0 ? `${cleanPathname}?${queryParts.join('?')}` : cleanPathname;
+
   if (!API_BASE_URL) {
     return normalizedPath;
   }
