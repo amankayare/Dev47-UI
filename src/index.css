@@ -763,4 +763,9 @@ html.dark .admin-theme-scope .admin-grant-action:hover {
 
 .magic-border-active .magic-border-glow {
   opacity: 1;
-}
+}
+
+.from-foreground {
+  --tw-gradient-stops: var(--tw-gradient-from), #111827;
+}
+
