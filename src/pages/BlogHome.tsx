@@ -211,9 +211,38 @@ export default function BlogHome() {
   const [search, setSearch] = useState('');
   const [searchDraft, setSearchDraft] = useState('');
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [showBanner, setShowBanner] = useState(true);
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Dynamic Newsletter Banner Settings (Managed from Admin Dashboard)
+  const { data: bannerSettings } = useQuery<{
+    is_visible: boolean;
+    title: string;
+    badge: string;
+    description: string;
+  }>({
+    queryKey: ['newsletter-banner-settings'],
+    queryFn: async () => {
+      try {
+        const response = await fetch(apiUrl('/api/settings/newsletter-banner'));
+        if (!response.ok) throw new Error('Failed to fetch banner settings');
+        return await response.json();
+      } catch (err) {
+        return {
+          is_visible: true,
+          title: 'Dev47 Future Insights',
+          badge: 'Newsletter',
+          description:
+            'Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations delivered straight to your inbox.',
+        };
+      }
+    },
+    staleTime: 30 * 1000,
+  });
+
+  const [isBannerDismissed, setIsBannerDismissed] = useState(() => {
+    return localStorage.getItem('dismiss-announcement') === 'true';
+  });
 
   const handleSubscribe = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -227,7 +256,7 @@ export default function BlogHome() {
       });
       setEmail('');
       localStorage.setItem('dismiss-announcement', 'true');
-      setShowBanner(false);
+      setIsBannerDismissed(true);
     } catch (err) {
       toast({
         title: "Subscription Failed",
@@ -701,8 +730,8 @@ export default function BlogHome() {
       <div className="relative py-10">
         <main className="container mx-auto max-w-7xl bg-background border border-border/40 shadow-2xl rounded-3xl p-6 sm:p-8 lg:p-10 mx-4 sm:mx-6 lg:mx-auto">
 
-          {/* ── Futuristic, Modern & Professional Banner ──────────────── */}
-          {showBanner && (
+          {/* ── Futuristic, Modern & Dynamic Newsletter Banner ──────────────── */}
+          {bannerSettings?.is_visible !== false && !isBannerDismissed && (
             <div className="relative overflow-hidden rounded-2xl bg-background border border-border/50 shadow-2xl mb-10 p-[1px] group">
 
               {/* Futuristic Background Gradients & Animated Borders */}
@@ -716,7 +745,7 @@ export default function BlogHome() {
                 <button
                   onClick={() => {
                     localStorage.setItem('dismiss-announcement', 'true');
-                    setShowBanner(false);
+                    setIsBannerDismissed(true);
                   }}
                   className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-all duration-300 p-1.5 rounded-full hover:bg-white/5"
                   aria-label="Dismiss announcement"
@@ -732,14 +761,14 @@ export default function BlogHome() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <h3 className="text-lg font-bold text-foreground tracking-tight">
-                        Dev47 Future Insights
+                        {bannerSettings?.title || 'Dev47 Future Insights'}
                       </h3>
                       <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 text-[9px] font-bold uppercase tracking-widest">
-                        Newsletter
+                        {bannerSettings?.badge || 'Newsletter'}
                       </span>
                     </div>
                     <p className="text-[15px] text-muted-foreground leading-relaxed">
-                      Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations delivered straight to your inbox.
+                      {bannerSettings?.description || 'Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations delivered straight to your inbox.'}
                     </p>
                   </div>
                 </div>

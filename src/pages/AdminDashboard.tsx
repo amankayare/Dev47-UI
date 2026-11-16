@@ -15,7 +15,8 @@ import { useToast } from '@/hooks/use-toast';
 import { LogOut, Users, MessageSquare, FolderOpen, FileText, Award, BarChart3, User, Briefcase, Code, ShieldCheck, Sun, Moon, ArrowLeft, Eye, EyeOff, Trash2, Settings, ChevronDown, Mail, Clock } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
-import { apiGet, apiPut, apiDelete } from '@/utils/api';
+import { apiGet, apiPut, apiDelete, apiUrl } from '@/utils/api';
+import { Switch } from '@/components/ui/switch';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
   DropdownMenu,
@@ -260,6 +261,48 @@ export default function AdminDashboard() {
       toast({
         title: 'Success',
         description: data.message,
+      });
+    },
+  });
+
+  // Newsletter Banner Settings (Dev47 Future Insights)
+  const { data: bannerSettings } = useQuery<{
+    is_visible: boolean;
+    title: string;
+    badge: string;
+    description: string;
+  }>({
+    queryKey: ['/api/admin/settings/newsletter-banner'],
+    queryFn: async () => {
+      try {
+        return await apiGet('/api/admin/settings/newsletter-banner');
+      } catch (err) {
+        const res = await fetch(apiUrl('/api/settings/newsletter-banner'));
+        return await res.json();
+      }
+    },
+    enabled: !!currentUser,
+  });
+
+  const toggleBannerMutation = useMutation({
+    mutationFn: (isVisible: boolean) =>
+      apiPut('/api/admin/settings/newsletter-banner', { is_visible: isVisible }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings/newsletter-banner'] });
+      queryClient.invalidateQueries({ queryKey: ['newsletter-banner-settings'] });
+      const visible = data?.settings?.is_visible ?? true;
+      toast({
+        title: visible ? 'Newsletter Banner Visible' : 'Newsletter Banner Hidden',
+        description: visible
+          ? 'The Future Insights newsletter banner is now visible on the blog home page.'
+          : 'The Future Insights newsletter banner is now hidden from visitors.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update newsletter banner visibility.',
+        variant: 'destructive',
       });
     },
   });
@@ -912,6 +955,73 @@ export default function AdminDashboard() {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* Newsletter Banner Dynamic Management */}
+              <Card className="admin-content-card relative overflow-hidden rounded-[2.5rem] border-0 bg-gradient-to-br from-card to-card/95 dark:from-cornflower-950/80 dark:to-cornflower-900/60 shadow-xl border border-cornflower-200/50 dark:border-cornflower-500/15">
+                <CardHeader className="bg-transparent border-b border-cornflower-200/50 dark:border-cornflower-500/15 p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <CardTitle className="flex items-center gap-3 text-xl font-black text-cornflower-950 dark:text-cornflower-50">
+                      <div className="p-3 bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 rounded-2xl shadow-sm border border-cyan-500/20">
+                        <Mail className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <span>Dev47 Future Insights Newsletter</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge
+                            variant="secondary"
+                            className={
+                              bannerSettings?.is_visible ?? true
+                                ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5"
+                                : "bg-muted text-muted-foreground border border-border text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5"
+                            }
+                          >
+                            {bannerSettings?.is_visible ?? true ? "● Visible to Public" : "○ Hidden from Public"}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardTitle>
+
+                    {/* Toggle Switch */}
+                    <div className="flex items-center gap-3 bg-cornflower-500/5 dark:bg-black/30 px-5 py-3 rounded-2xl border border-cornflower-200/40 dark:border-cornflower-500/15">
+                      <span className="text-xs font-black uppercase tracking-wider text-cornflower-900 dark:text-cornflower-100">
+                        {bannerSettings?.is_visible ?? true ? "Visible" : "Hidden"}
+                      </span>
+                      <Switch
+                        checked={bannerSettings?.is_visible ?? true}
+                        disabled={toggleBannerMutation.isPending}
+                        onCheckedChange={(checked) => toggleBannerMutation.mutate(checked)}
+                        aria-label="Toggle newsletter banner visibility"
+                      />
+                    </div>
+                  </div>
+                  <CardDescription className="text-cornflower-800/70 dark:text-cornflower-200/70 font-medium mt-3">
+                    Control the promotional newsletter banner displayed across the Blog Home page (/blogs). When toggled off, the banner is hidden for all website visitors.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="p-5 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 dark:bg-cyan-950/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
+                        Live Preview
+                      </div>
+                      <div className="font-bold text-foreground text-sm">
+                        {bannerSettings?.title || "Dev47 Future Insights"} · <span className="text-xs font-normal text-muted-foreground">{bannerSettings?.badge || "Newsletter"}</span>
+                      </div>
+                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
+                        {bannerSettings?.description || "Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations."}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open('/blogs', '_blank')}
+                      className="rounded-full text-xs font-bold uppercase tracking-wider px-4 border-cornflower-200 dark:border-cornflower-500/30"
+                    >
+                      View on Blog ↗
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
             </TabsContent>
           </Tabs>
         </div>

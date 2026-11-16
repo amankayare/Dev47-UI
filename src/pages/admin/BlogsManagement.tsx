@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { Plus, Edit, Trash2, Star, Search, X, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Star, Search, X, Eye, Mail } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
-import { apiGet, apiDelete, apiAssetUrl, apiUrl } from '@/utils/api';
+import { apiGet, apiPut, apiDelete, apiAssetUrl, apiUrl } from '@/utils/api';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { Switch } from '@/components/ui/switch';
 
 interface Blog {
   id: number;
@@ -68,6 +69,47 @@ export default function BlogsManagement() {
     }, 400);
     return () => clearTimeout(handler);
   }, [search]);
+
+  // Newsletter Banner settings
+  const { data: bannerSettings } = useQuery<{
+    is_visible: boolean;
+    title: string;
+    badge: string;
+    description: string;
+  }>({
+    queryKey: ['/api/admin/settings/newsletter-banner'],
+    queryFn: async () => {
+      try {
+        return await apiGet('/api/admin/settings/newsletter-banner');
+      } catch (err) {
+        const res = await fetch(apiUrl('/api/settings/newsletter-banner'));
+        return await res.json();
+      }
+    },
+  });
+
+  const toggleBannerMutation = useMutation({
+    mutationFn: (isVisible: boolean) =>
+      apiPut('/api/admin/settings/newsletter-banner', { is_visible: isVisible }),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings/newsletter-banner'] });
+      queryClient.invalidateQueries({ queryKey: ['newsletter-banner-settings'] });
+      const visible = data?.settings?.is_visible ?? true;
+      toast({
+        title: visible ? 'Newsletter Banner Visible' : 'Newsletter Banner Hidden',
+        description: visible
+          ? 'The Future Insights newsletter banner is now visible on the blog home page.'
+          : 'The Future Insights newsletter banner is now hidden from visitors.',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Update Failed',
+        description: error.message || 'Failed to update newsletter banner visibility.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   // Delete confirmation setup
   const deleteConfirmation = useDeleteConfirmation({
@@ -184,13 +226,39 @@ export default function BlogsManagement() {
                   </p>
                 </div>
                 
-                <Button 
-                  className="bg-cornflower-600 hover:bg-cornflower-700 dark:bg-cornflower-500 dark:hover:bg-cornflower-600 text-white shadow-xl shadow-cornflower-500/20 transition-all duration-300 px-8 py-6 font-black uppercase tracking-widest rounded-full border-0 transform hover:scale-105 active:scale-95" 
-                  onClick={() => setLocation('/admin/blogs/new')}
-                >
-                  <Plus className="w-5 h-5 mr-2" />
-                  Create New Post
-                </Button>
+                <div className="flex flex-wrap items-center gap-4">
+                  {/* Quick Newsletter Banner Visibility Toggle */}
+                  <div className="flex items-center gap-3 bg-white/70 dark:bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-cornflower-200/50 dark:border-cornflower-500/20 shadow-sm">
+                    <Mail className="w-4 h-4 text-cyan-500" />
+                    <span className="text-xs font-bold text-cornflower-900 dark:text-cornflower-100 whitespace-nowrap">
+                      Newsletter Banner:
+                    </span>
+                    <Badge
+                      variant="secondary"
+                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 ${
+                        bannerSettings?.is_visible ?? true
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                          : "bg-muted text-muted-foreground border border-border"
+                      }`}
+                    >
+                      {bannerSettings?.is_visible ?? true ? "Visible" : "Hidden"}
+                    </Badge>
+                    <Switch
+                      checked={bannerSettings?.is_visible ?? true}
+                      disabled={toggleBannerMutation.isPending}
+                      onCheckedChange={(checked) => toggleBannerMutation.mutate(checked)}
+                      aria-label="Toggle newsletter banner visibility"
+                    />
+                  </div>
+
+                  <Button 
+                    className="bg-cornflower-600 hover:bg-cornflower-700 dark:bg-cornflower-500 dark:hover:bg-cornflower-600 text-white shadow-xl shadow-cornflower-500/20 transition-all duration-300 px-8 py-6 font-black uppercase tracking-widest rounded-full border-0 transform hover:scale-105 active:scale-95" 
+                    onClick={() => setLocation('/admin/blogs/new')}
+                  >
+                    <Plus className="w-5 h-5 mr-2" />
+                    Create New Post
+                  </Button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-end border-t border-cornflower-100 dark:border-cornflower-500/10 pt-8">
