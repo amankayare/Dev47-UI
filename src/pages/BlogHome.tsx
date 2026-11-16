@@ -374,7 +374,7 @@ export default function BlogHome() {
     localStorage.removeItem('user');
     setCurrentUser(null);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-    setLocation('/');
+    window.location.href = 'https://amankayare.com/blogs';
   };
 
   // Top featured blogs — always from the full unfiltered list

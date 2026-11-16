@@ -314,7 +314,7 @@ export default function UserProfile() {
       title: "Logged out successfully",
       description: "You have been logged out.",
     });
-    setLocation('/');
+    window.location.href = 'https://amankayare.com/blogs';
   };
 
   return (
