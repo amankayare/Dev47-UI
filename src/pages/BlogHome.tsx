@@ -374,6 +374,7 @@ export default function BlogHome() {
     localStorage.removeItem('user');
     setCurrentUser(null);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
+    setLocation('/');
   };
 
   // Top featured blogs — always from the full unfiltered list
