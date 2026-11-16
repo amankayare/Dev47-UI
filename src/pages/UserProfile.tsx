@@ -551,13 +551,15 @@ export default function UserProfile() {
                           value={passwordData.currentPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
                           placeholder="Enter your current password"
+                          className="pr-10"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-transparent"
                           onClick={() => setShowPasswords({ ...showPasswords, current: !showPasswords.current })}
+                          aria-label={showPasswords.current ? "Hide password" : "Show password"}
                         >
                           {showPasswords.current ? (
                             <EyeOff className="h-4 w-4" />
@@ -577,13 +579,15 @@ export default function UserProfile() {
                           value={passwordData.newPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
                           placeholder="Enter your new password"
+                          className="pr-10"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-transparent"
                           onClick={() => setShowPasswords({ ...showPasswords, new: !showPasswords.new })}
+                          aria-label={showPasswords.new ? "Hide password" : "Show password"}
                         >
                           {showPasswords.new ? (
                             <EyeOff className="h-4 w-4" />
@@ -603,13 +607,15 @@ export default function UserProfile() {
                           value={passwordData.confirmPassword}
                           onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
                           placeholder="Confirm your new password"
+                          className="pr-10"
                         />
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          className="absolute right-0 top-0 h-full px-3 py-2 text-muted-foreground hover:text-foreground hover:bg-transparent"
                           onClick={() => setShowPasswords({ ...showPasswords, confirm: !showPasswords.confirm })}
+                          aria-label={showPasswords.confirm ? "Hide password" : "Show password"}
                         >
                           {showPasswords.confirm ? (
                             <EyeOff className="h-4 w-4" />
