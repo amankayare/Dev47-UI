@@ -72,12 +72,22 @@ export default function BlogsManagement() {
     return () => clearTimeout(handler);
   }, [search]);
 
-  // Newsletter Banner settings
+  // Promotional Banner settings (Form / HTML / Image)
   const { data: bannerSettings } = useQuery<{
     is_visible: boolean;
+    banner_type?: 'form' | 'html' | 'image';
     title: string;
     badge: string;
     description: string;
+    button_text?: string;
+    placeholder?: string;
+    html_content?: string;
+    image_url?: string;
+    image_link?: string;
+    image_alt?: string;
+    image_position_x?: number;
+    image_position_y?: number;
+    image_scale?: number;
   }>({
     queryKey: ['/api/admin/settings/newsletter-banner'],
     queryFn: async () => {

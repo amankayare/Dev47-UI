@@ -214,12 +214,22 @@ export default function BlogHome() {
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Dynamic Newsletter Banner Settings (Managed from Admin Dashboard)
+  // Dynamic Promotional Banner Settings (Managed from Admin Dashboard: Form / HTML / Image)
   const { data: bannerSettings } = useQuery<{
     is_visible: boolean;
+    banner_type?: 'form' | 'html' | 'image';
     title: string;
     badge: string;
     description: string;
+    button_text?: string;
+    placeholder?: string;
+    html_content?: string;
+    image_url?: string;
+    image_link?: string;
+    image_alt?: string;
+    image_position_x?: number;
+    image_position_y?: number;
+    image_scale?: number;
   }>({
     queryKey: ['newsletter-banner-settings'],
     queryFn: async () => {
@@ -230,10 +240,20 @@ export default function BlogHome() {
       } catch (err) {
         return {
           is_visible: true,
+          banner_type: 'form',
           title: 'Dev47 Future Insights',
           badge: 'Newsletter',
           description:
             'Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations delivered straight to your inbox.',
+          button_text: 'Subscribe',
+          placeholder: 'name@example.com',
+          html_content: '',
+          image_url: '',
+          image_link: '',
+          image_alt: '',
+          image_position_x: 50,
+          image_position_y: 50,
+          image_scale: 1,
         };
       }
     },
@@ -785,76 +805,144 @@ export default function BlogHome() {
       <div className="relative pt-4 pb-12 sm:pt-6 sm:pb-16">
         <main className="container mx-auto max-w-7xl bg-background border border-border/40 shadow-2xl rounded-3xl p-6 sm:p-8 lg:p-10 mx-4 sm:mx-6 lg:mx-auto">
 
-          {/* ── Futuristic, Modern & Dynamic Newsletter Banner ──────────────── */}
+          {/* ── Dynamic Promotional Banner (Supports Form / HTML / Image) ──────── */}
           {bannerSettings?.is_visible !== false && !isBannerDismissed && (
-            <div className="relative overflow-hidden rounded-2xl bg-background border border-border/50 shadow-2xl mb-10 p-[1px] group">
+            <div className="relative mb-10">
+              {/* Option 2: Custom HTML Banner */}
+              {bannerSettings?.banner_type === 'html' && bannerSettings.html_content ? (
+                <div className="relative overflow-hidden rounded-2xl bg-background border border-border/50 shadow-2xl p-[1px] group">
+                  {/* Dismiss Button */}
+                  <button
+                    onClick={() => {
+                      localStorage.setItem('dismiss-announcement', 'true');
+                      setIsBannerDismissed(true);
+                    }}
+                    className="absolute top-3 right-3 z-20 text-muted-foreground hover:text-foreground bg-background/80 hover:bg-background backdrop-blur-md transition-all duration-300 p-1.5 rounded-full border border-border/60 shadow-sm"
+                    aria-label="Dismiss announcement"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
 
-              {/* Futuristic Background Gradients & Animated Borders */}
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 pointer-events-none" />
-              <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-              <div className="absolute -top-32 -right-32 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
+                  <div
+                    className="w-full overflow-hidden rounded-2xl"
+                    dangerouslySetInnerHTML={{ __html: bannerSettings.html_content }}
+                  />
+                </div>
+              ) : bannerSettings?.banner_type === 'image' && bannerSettings.image_url ? (
+                /* Option 3: Image Banner with Snip-style positioning */
+                <div className="relative h-44 sm:h-56 md:h-64 w-full overflow-hidden rounded-2xl bg-black/60 border border-border/50 shadow-2xl group">
+                  {/* Dismiss Button */}
+                  <button
+                    onClick={() => {
+                      localStorage.setItem('dismiss-announcement', 'true');
+                      setIsBannerDismissed(true);
+                    }}
+                    className="absolute top-3 right-3 z-20 text-white/80 hover:text-white bg-black/60 hover:bg-black/90 backdrop-blur-md transition-all duration-300 p-1.5 rounded-full border border-white/20 shadow-md"
+                    aria-label="Dismiss announcement"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
 
-              <div className="relative bg-card/40 backdrop-blur-xl rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-8 border border-white/5">
+                  {bannerSettings.image_link ? (
+                    <a
+                      href={bannerSettings.image_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block w-full h-full cursor-pointer"
+                    >
+                      <img
+                        src={bannerSettings.image_url}
+                        alt={bannerSettings.image_alt || 'Announcement Banner'}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        style={{
+                          objectPosition: `${bannerSettings.image_position_x ?? 50}% ${bannerSettings.image_position_y ?? 50}%`,
+                          transform: `scale(${bannerSettings.image_scale || 1})`,
+                          transformOrigin: `${bannerSettings.image_position_x ?? 50}% ${bannerSettings.image_position_y ?? 50}%`,
+                        }}
+                      />
+                    </a>
+                  ) : (
+                    <img
+                      src={bannerSettings.image_url}
+                      alt={bannerSettings.image_alt || 'Announcement Banner'}
+                      className="w-full h-full object-cover"
+                      style={{
+                        objectPosition: `${bannerSettings.image_position_x ?? 50}% ${bannerSettings.image_position_y ?? 50}%`,
+                        transform: `scale(${bannerSettings.image_scale || 1})`,
+                        transformOrigin: `${bannerSettings.image_position_x ?? 50}% ${bannerSettings.image_position_y ?? 50}%`,
+                      }}
+                    />
+                  )}
+                </div>
+              ) : (
+                /* Option 1: Standard Newsletter Form Banner */
+                <div className="relative overflow-hidden rounded-2xl bg-background border border-border/50 shadow-2xl p-[1px] group">
+                  {/* Futuristic Background Gradients & Animated Borders */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 pointer-events-none" />
+                  <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+                  <div className="absolute -top-32 -right-32 w-64 h-64 bg-cyan-500/10 rounded-full blur-[80px] pointer-events-none" />
 
-                {/* Dismiss Button */}
-                <button
-                  onClick={() => {
-                    localStorage.setItem('dismiss-announcement', 'true');
-                    setIsBannerDismissed(true);
-                  }}
-                  className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-all duration-300 p-1.5 rounded-full hover:bg-white/5"
-                  aria-label="Dismiss announcement"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                  <div className="relative bg-card/40 backdrop-blur-xl rounded-xl p-6 sm:p-8 flex flex-col lg:flex-row lg:items-center justify-between gap-8 border border-white/5">
+                    {/* Dismiss Button */}
+                    <button
+                      onClick={() => {
+                        localStorage.setItem('dismiss-announcement', 'true');
+                        setIsBannerDismissed(true);
+                      }}
+                      className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-all duration-300 p-1.5 rounded-full hover:bg-white/5"
+                      aria-label="Dismiss announcement"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
 
-                {/* Content Section */}
-                <div className="flex gap-5 items-start max-w-3xl pr-8">
-                  <div className="flex-shrink-0 p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/20 text-cyan-400 mt-1 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
-                    <Sparkles className="w-5 h-5" />
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-3">
-                      <h3 className="text-lg font-bold text-foreground tracking-tight">
-                        {bannerSettings?.title || 'Dev47 Future Insights'}
-                      </h3>
-                      <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 text-[9px] font-bold uppercase tracking-widest">
-                        {bannerSettings?.badge || 'Newsletter'}
-                      </span>
+                    {/* Content Section */}
+                    <div className="flex gap-5 items-start max-w-3xl pr-8">
+                      <div className="flex-shrink-0 p-3 rounded-2xl bg-gradient-to-br from-cyan-500/20 to-blue-500/10 border border-cyan-500/20 text-cyan-400 mt-1 shadow-[0_0_15px_rgba(6,182,212,0.15)]">
+                        <Sparkles className="w-5 h-5" />
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-bold text-foreground tracking-tight">
+                            {bannerSettings?.title || 'Dev47 Future Insights'}
+                          </h3>
+                          <span className="px-2.5 py-0.5 rounded-full bg-cyan-500/10 text-cyan-500 border border-cyan-500/20 text-[9px] font-bold uppercase tracking-widest">
+                            {bannerSettings?.badge || 'Newsletter'}
+                          </span>
+                        </div>
+                        <p className="text-[15px] text-muted-foreground leading-relaxed">
+                          {bannerSettings?.description || 'Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations delivered straight to your inbox.'}
+                        </p>
+                      </div>
                     </div>
-                    <p className="text-[15px] text-muted-foreground leading-relaxed">
-                      {bannerSettings?.description || 'Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations delivered straight to your inbox.'}
-                    </p>
+
+                    {/* Futuristic Inline Subscription Form */}
+                    <form
+                      onSubmit={handleSubscribe}
+                      className="flex-shrink-0 w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3 max-w-md lg:max-w-none relative z-10"
+                    >
+                      <div className="relative w-full lg:w-64">
+                        <div className="absolute inset-0 bg-cyan-500/20 rounded-xl blur-md opacity-0 focus-within:opacity-100 transition-opacity duration-500" />
+                        <Input
+                          type="email"
+                          placeholder={bannerSettings?.placeholder || "name@example.com"}
+                          required
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="relative bg-background/50 backdrop-blur-sm border-border/80 focus-visible:ring-1 focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl h-11 w-full text-[15px] shadow-inner placeholder:text-muted-foreground/50 transition-all duration-300"
+                        />
+                      </div>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full sm:w-auto relative group overflow-hidden bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-xl px-6 h-11 shadow-md transition-all duration-300 border border-transparent hover:border-cyan-500/30"
+                      >
+                        <span className="relative z-10">{isSubmitting ? 'Submitting...' : (bannerSettings?.button_text || 'Subscribe')}</span>
+                        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
+                      </Button>
+                    </form>
                   </div>
                 </div>
-
-                {/* Futuristic Inline Subscription Form */}
-                <form
-                  onSubmit={handleSubscribe}
-                  className="flex-shrink-0 w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3 max-w-md lg:max-w-none relative z-10"
-                >
-                  <div className="relative w-full lg:w-64">
-                    <div className="absolute inset-0 bg-cyan-500/20 rounded-xl blur-md opacity-0 focus-within:opacity-100 transition-opacity duration-500" />
-                    <Input
-                      type="email"
-                      placeholder={bannerSettings?.placeholder || "name@example.com"}
-                      required
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="relative bg-background/50 backdrop-blur-sm border-border/80 focus-visible:ring-1 focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl h-11 w-full text-[15px] shadow-inner placeholder:text-muted-foreground/50 transition-all duration-300"
-                    />
-                  </div>
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full sm:w-auto relative group overflow-hidden bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-xl px-6 h-11 shadow-md transition-all duration-300 border border-transparent hover:border-cyan-500/30"
-                  >
-                    <span className="relative z-10">{isSubmitting ? 'Submitting...' : (bannerSettings?.button_text || 'Subscribe')}</span>
-                    <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-                  </Button>
-                </form>
-
-              </div>
+              )}
             </div>
           )}
 

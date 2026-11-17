@@ -267,12 +267,22 @@ export default function AdminDashboard() {
     },
   });
 
-  // Newsletter Banner Settings (Dev47 Future Insights)
+  // Promotional Banner Settings (Dev47 Insights: Form / HTML / Image)
   const { data: bannerSettings } = useQuery<{
     is_visible: boolean;
+    banner_type?: 'form' | 'html' | 'image';
     title: string;
     badge: string;
     description: string;
+    button_text?: string;
+    placeholder?: string;
+    html_content?: string;
+    image_url?: string;
+    image_link?: string;
+    image_alt?: string;
+    image_position_x?: number;
+    image_position_y?: number;
+    image_scale?: number;
   }>({
     queryKey: ['/api/admin/settings/newsletter-banner'],
     queryFn: async () => {
@@ -967,7 +977,7 @@ export default function AdminDashboard() {
                         <Mail className="h-6 w-6" />
                       </div>
                       <div>
-                        <span>Dev47 Future Insights Newsletter</span>
+                        <span>Dev47 Promotional Banner</span>
                         <div className="flex items-center gap-2 mt-1">
                           <Badge
                             variant="secondary"
@@ -978,6 +988,16 @@ export default function AdminDashboard() {
                             }
                           >
                             {bannerSettings?.is_visible ?? true ? "● Visible to Public" : "○ Hidden from Public"}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5"
+                          >
+                            {bannerSettings?.banner_type === 'html'
+                              ? 'Custom HTML'
+                              : bannerSettings?.banner_type === 'image'
+                              ? 'Image Banner'
+                              : 'Newsletter Form'}
                           </Badge>
                         </div>
                       </div>
@@ -1004,14 +1024,26 @@ export default function AdminDashboard() {
                   <div className="p-5 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 dark:bg-cyan-950/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                     <div className="space-y-1">
                       <div className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
-                        Live Preview
+                        Live Preview ({bannerSettings?.banner_type === 'html' ? 'Custom HTML' : bannerSettings?.banner_type === 'image' ? 'Image Banner' : 'Newsletter Form'})
                       </div>
-                      <div className="font-bold text-foreground text-sm">
-                        {bannerSettings?.title || "Dev47 Future Insights"} · <span className="text-xs font-normal text-muted-foreground">{bannerSettings?.badge || "Newsletter"}</span>
-                      </div>
-                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
-                        {bannerSettings?.description || "Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations."}
-                      </p>
+                      {bannerSettings?.banner_type === 'html' ? (
+                        <div className="font-mono text-xs text-muted-foreground line-clamp-1 max-w-2xl bg-black/30 px-2 py-1 rounded">
+                          {bannerSettings.html_content ? bannerSettings.html_content.slice(0, 120) + '...' : 'Custom HTML markup'}
+                        </div>
+                      ) : bannerSettings?.banner_type === 'image' ? (
+                        <div className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
+                          <span className="font-semibold text-foreground">Image:</span> {bannerSettings.image_url || 'No image URL set'} · Position: {bannerSettings.image_position_x ?? 50}%, {bannerSettings.image_position_y ?? 50}% ({Math.round((bannerSettings.image_scale || 1) * 100)}% zoom)
+                        </div>
+                      ) : (
+                        <>
+                          <div className="font-bold text-foreground text-sm">
+                            {bannerSettings?.title || "Dev47 Future Insights"} · <span className="text-xs font-normal text-muted-foreground">{bannerSettings?.badge || "Newsletter"}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
+                            {bannerSettings?.description || "Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations."}
+                          </p>
+                        </>
+                      )}
                     </div>
                     <div className="flex items-center gap-2 w-full md:w-auto">
                       <Button
