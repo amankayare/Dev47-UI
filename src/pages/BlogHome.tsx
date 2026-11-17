@@ -270,18 +270,35 @@ export default function BlogHome() {
     if (!email) return;
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      toast({
-        title: "Subscribed Successfully!",
-        description: "Thank you for subscribing! You will receive our next update.",
+      const response = await fetch(apiUrl('/api/newsletter/subscribe'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email.trim(), source: 'blog_banner' }),
       });
-      setEmail('');
-      localStorage.setItem('dismiss-announcement', 'true');
-      setIsBannerDismissed(true);
-    } catch (err) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to subscribe');
+      }
+
+      if (data.status === 'already_subscribed') {
+        toast({
+          title: "Already Subscribed",
+          description: data.message || "You're already subscribed to Dev47 Future Insights!",
+        });
+      } else {
+        toast({
+          title: "Confirmation Email Sent!",
+          description: data.message || "Please check your inbox to confirm your subscription.",
+        });
+        setEmail('');
+      }
+    } catch (err: any) {
       toast({
         title: "Subscription Failed",
-        description: "There was an error subscribing. Please try again.",
+        description: err.message || "There was an error subscribing. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -309,14 +326,40 @@ export default function BlogHome() {
     }
   }, []);
 
-  // Handle URL tag parameters
+  // Handle URL tag and newsletter confirmation parameters
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const tagParam = urlParams.get('tag');
     if (tagParam) {
       setSelectedTag(tagParam.toLowerCase());
     }
-  }, [location]);
+
+    const newsletterStatus = urlParams.get('newsletter');
+    if (newsletterStatus) {
+      if (newsletterStatus === 'confirmed') {
+        toast({
+          title: "🎉 Subscription Confirmed!",
+          description: "Welcome to Dev47 Insights! You are now subscribed to receive our articles.",
+        });
+      } else if (newsletterStatus === 'unsubscribed') {
+        toast({
+          title: "Unsubscribed Successfully",
+          description: "You have been unsubscribed from the Dev47 Insights newsletter.",
+        });
+      } else if (newsletterStatus === 'invalid_or_expired') {
+        toast({
+          title: "Link Expired or Invalid",
+          description: "This confirmation link is invalid or has already been used.",
+          variant: "destructive",
+        });
+      }
+
+      // Clean up the URL without reloading
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.delete('newsletter');
+      window.history.replaceState({}, '', newUrl.toString());
+    }
+  }, [location, toast]);
 
   // Mobile detection
   useEffect(() => {
