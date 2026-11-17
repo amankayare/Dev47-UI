@@ -12,11 +12,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Users, MessageSquare, FolderOpen, FileText, Award, BarChart3, User, Briefcase, Code, ShieldCheck, Sun, Moon, ArrowLeft, Eye, EyeOff, Trash2, Settings, ChevronDown, Mail, Clock } from 'lucide-react';
+import { LogOut, Users, MessageSquare, FolderOpen, FileText, Award, BarChart3, User, Briefcase, Code, ShieldCheck, Sun, Moon, ArrowLeft, Eye, EyeOff, Trash2, Settings, ChevronDown, Mail, Clock, Edit } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { apiGet, apiPut, apiDelete, apiUrl } from '@/utils/api';
 import { Switch } from '@/components/ui/switch';
+import { NewsletterBannerModal } from '@/components/admin/NewsletterBannerModal';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
   DropdownMenu,
@@ -67,6 +68,7 @@ export default function AdminDashboard() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   // Delete confirmation setup for messages
@@ -1011,20 +1013,37 @@ export default function AdminDashboard() {
                         {bannerSettings?.description || "Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations."}
                       </p>
                     </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open('/blogs', '_blank')}
-                      className="rounded-full text-xs font-bold uppercase tracking-wider px-4 border-cornflower-200 dark:border-cornflower-500/30"
-                    >
-                      View on Blog ↗
-                    </Button>
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBannerModalOpen(true)}
+                        className="rounded-full text-xs font-bold uppercase tracking-wider px-4 border-cornflower-200 dark:border-cornflower-500/30 gap-1.5 bg-white/50 dark:bg-black/20 hover:bg-cornflower-500/10"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit Content
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open('/blogs', '_blank')}
+                        className="rounded-full text-xs font-bold uppercase tracking-wider px-4 hover:bg-cornflower-500/10"
+                      >
+                        View on Blog ↗
+                      </Button>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
           </Tabs>
         </div>
+
+      {/* Newsletter Banner Edit Modal */}
+      <NewsletterBannerModal
+        isOpen={bannerModalOpen}
+        onClose={() => setBannerModalOpen(false)}
+        initialData={bannerSettings}
+      />
 
       {/* Delete Confirmation Dialog */}
       <ConfirmDialog

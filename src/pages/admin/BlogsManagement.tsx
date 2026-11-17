@@ -13,6 +13,7 @@ import { apiGet, apiPut, apiDelete, apiAssetUrl, apiUrl } from '@/utils/api';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Switch } from '@/components/ui/switch';
+import { NewsletterBannerModal } from '@/components/admin/NewsletterBannerModal';
 
 interface Blog {
   id: number;
@@ -47,6 +48,7 @@ export default function BlogsManagement() {
   const [categoryFilter, setCategoryFilter] = useState('');
   const [sortByCategory, setSortByCategory] = useState(false);
   const [categories, setCategories] = useState<Array<{id: number; name: string}>>([]);
+  const [bannerModalOpen, setBannerModalOpen] = useState(false);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -249,6 +251,15 @@ export default function BlogsManagement() {
                       onCheckedChange={(checked) => toggleBannerMutation.mutate(checked)}
                       aria-label="Toggle newsletter banner visibility"
                     />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setBannerModalOpen(true)}
+                      className="h-7 px-2.5 text-xs font-bold text-cornflower-700 dark:text-cornflower-300 hover:bg-cornflower-500/10 rounded-full"
+                      title="Edit banner content"
+                    >
+                      <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                    </Button>
                   </div>
 
                   <Button 
@@ -628,6 +639,13 @@ export default function BlogsManagement() {
         )}
         </div>
       </div>
+
+      {/* Newsletter Banner Edit Modal */}
+      <NewsletterBannerModal
+        isOpen={bannerModalOpen}
+        onClose={() => setBannerModalOpen(false)}
+        initialData={bannerSettings}
+      />
 
       <ConfirmDialog
         open={deleteConfirmation.confirmState.isOpen}

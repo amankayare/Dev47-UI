@@ -782,7 +782,7 @@ export default function BlogHome() {
                     <div className="absolute inset-0 bg-cyan-500/20 rounded-xl blur-md opacity-0 focus-within:opacity-100 transition-opacity duration-500" />
                     <Input
                       type="email"
-                      placeholder="name@example.com"
+                      placeholder={bannerSettings?.placeholder || "name@example.com"}
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
@@ -794,7 +794,7 @@ export default function BlogHome() {
                     disabled={isSubmitting}
                     className="w-full sm:w-auto relative group overflow-hidden bg-foreground text-background hover:bg-foreground/90 font-semibold rounded-xl px-6 h-11 shadow-md transition-all duration-300 border border-transparent hover:border-cyan-500/30"
                   >
-                    <span className="relative z-10">{isSubmitting ? 'Submitting...' : 'Subscribe'}</span>
+                    <span className="relative z-10">{isSubmitting ? 'Submitting...' : (bannerSettings?.button_text || 'Subscribe')}</span>
                     <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/10 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
                   </Button>
                 </form>
