@@ -40,6 +40,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useToast } from '@/hooks/use-toast';
 import { useBlogs } from '@/hooks/useBlogs';
 import { apiAssetUrl, apiUrl } from '@/utils/api';
+import { normalizeImageUrl } from '@/utils/urlUtils';
 
 interface Blog {
   id: number;
@@ -851,8 +852,9 @@ export default function BlogHome() {
                       className="block w-full h-full cursor-pointer"
                     >
                       <img
-                        src={bannerSettings.image_url}
+                        src={normalizeImageUrl(bannerSettings.image_url)}
                         alt={bannerSettings.image_alt || 'Announcement Banner'}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                         style={{
                           objectPosition: `${bannerSettings.image_position_x ?? 50}% ${bannerSettings.image_position_y ?? 50}%`,
@@ -863,8 +865,9 @@ export default function BlogHome() {
                     </a>
                   ) : (
                     <img
-                      src={bannerSettings.image_url}
+                      src={normalizeImageUrl(bannerSettings.image_url)}
                       alt={bannerSettings.image_alt || 'Announcement Banner'}
+                      referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
                       style={{
                         objectPosition: `${bannerSettings.image_position_x ?? 50}% ${bannerSettings.image_position_y ?? 50}%`,

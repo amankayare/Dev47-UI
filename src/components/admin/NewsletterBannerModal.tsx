@@ -29,7 +29,13 @@ import {
   Link as LinkIcon,
   HelpCircle,
   ExternalLink,
+  AlertTriangle,
 } from 'lucide-react';
+import {
+  normalizeImageUrl,
+  extractGoogleDriveFileId,
+  getGoogleDriveFallbackUrl,
+} from '@/utils/urlUtils';
 
 export type BannerType = 'form' | 'html' | 'image';
 
@@ -88,10 +94,25 @@ export function NewsletterBannerModal({
 
   const [formData, setFormData] = useState<NewsletterBannerData>(DEFAULT_BANNER);
 
+  // Image load error & fallback tracking (especially for Google Drive photos)
+  const [imgError, setImgError] = useState(false);
+  const [usingFallback, setUsingFallback] = useState(false);
+
+  // Compute normalized Google Drive / direct image URL
+  const normalizedUrl = normalizeImageUrl(formData.image_url || '');
+  const isGoogleDrive = Boolean(extractGoogleDriveFileId(formData.image_url || ''));
+  const fallbackUrl = getGoogleDriveFallbackUrl(formData.image_url || '');
+  const activeImageUrl = usingFallback && fallbackUrl ? fallbackUrl : normalizedUrl;
+
   // Snip-style Image Pan State
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ clientX: number; clientY: number; startX: number; startY: number } | null>(null);
   const previewContainerRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    setImgError(false);
+    setUsingFallback(false);
+  }, [formData.image_url]);
 
   useEffect(() => {
     if (initialData) {
@@ -386,9 +407,19 @@ export function NewsletterBannerModal({
                   {formData.image_url ? (
                     <>
                       <img
-                        src={formData.image_url}
+                        key={activeImageUrl}
+                        src={activeImageUrl}
                         alt={formData.image_alt || 'Banner Preview'}
                         draggable={false}
+                        referrerPolicy="no-referrer"
+                        crossOrigin="anonymous"
+                        onError={() => {
+                          if (!usingFallback && fallbackUrl && fallbackUrl !== activeImageUrl) {
+                            setUsingFallback(true);
+                          } else {
+                            setImgError(true);
+                          }
+                        }}
                         className="w-full h-full object-cover pointer-events-none transition-transform duration-75"
                         style={{
                           objectPosition: `${formData.image_position_x ?? 50}% ${formData.image_position_y ?? 50}%`,
@@ -406,6 +437,22 @@ export function NewsletterBannerModal({
                           X: {formData.image_position_x}% · Y: {formData.image_position_y}% · {Math.round((formData.image_scale || 1) * 100)}%
                         </div>
                       </div>
+
+                      {/* Error Overlay for Private/Restricted Drive Photos */}
+                      {imgError && (
+                        <div className="absolute inset-0 bg-black/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center space-y-2.5 z-20">
+                          <div className="p-2.5 rounded-full bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                            <AlertTriangle className="w-6 h-6" />
+                          </div>
+                          <div className="space-y-1 max-w-md">
+                            <p className="text-xs font-bold text-white">Photo Could Not Load</p>
+                            <p className="text-[11px] text-muted-foreground leading-relaxed">
+                              If using Google Drive, make sure the file's General Access is set to <strong>"Anyone with the link"</strong> (Viewer).
+                              In Google Drive: Right-click image → <strong>Share</strong> → change from <em>Restricted</em> to <em>Anyone with the link</em>.
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground p-6 text-center space-y-2">
@@ -598,14 +645,31 @@ export function NewsletterBannerModal({
                 <Input
                   id="banner-image-url"
                   value={formData.image_url}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://example.com/banner.jpg"
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const normalized = normalizeImageUrl(val);
+                    setFormData((prev) => ({ ...prev, image_url: normalized }));
+                  }}
+                  placeholder="https://drive.google.com/file/d/... or any image URL"
                   className="h-11 rounded-xl bg-background/70 border-border"
                   required
                 />
-                <p className="text-[11px] text-muted-foreground">
-                  Paste any public image URL (JPEG, PNG, WebP, SVG). Use the preview box above to drag and fit the image.
-                </p>
+                {isGoogleDrive ? (
+                  <div className="flex items-start gap-2 p-3 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] text-cyan-300">
+                    <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+                    <div className="space-y-0.5">
+                      <span className="font-bold text-cyan-200">Google Drive share link detected!</span>
+                      <p className="text-cyan-400/90 leading-relaxed">
+                        Automatically converted to Google's direct CDN image stream (lh3.googleusercontent.com).
+                        Ensure the file's General Access is set to <strong>"Anyone with the link"</strong> (Viewer) in Google Drive.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-muted-foreground">
+                    Paste any image URL or <strong>Google Drive photo share link</strong>. Use the preview box above to drag and fit the image.
+                  </p>
+                )}
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
