@@ -23,6 +23,8 @@ import {
   Loader2,
   Sparkles,
   RefreshCw,
+  Eye,
+  Code2,
 } from 'lucide-react';
 
 interface Subscriber {
@@ -55,6 +57,7 @@ export const NewsletterSubscribersModal: React.FC<NewsletterSubscribersModalProp
   const [contentHtml, setContentHtml] = useState('');
   const [targetGroup, setTargetGroup] = useState<'active' | 'all'>('active');
   const [confirmSend, setConfirmSend] = useState(false);
+  const [broadcastViewMode, setBroadcastViewMode] = useState<'edit' | 'preview'>('edit');
 
   // Fetch subscribers list and statistics
   const { data, isLoading, refetch, isRefetching } = useQuery<{
@@ -362,18 +365,107 @@ export const NewsletterSubscribersModal: React.FC<NewsletterSubscribersModalProp
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-semibold text-foreground flex items-center justify-between">
-                  <span>Email Content (HTML or plain text) <span className="text-red-500">*</span></span>
-                  <span className="text-[11px] text-muted-foreground">Supports &lt;p&gt;, &lt;h2&gt;, &lt;a&gt;, &lt;strong&gt; tags</span>
-                </label>
-                <Textarea
-                  placeholder="<p>Hey everyone,</p><p>Today we are diving into our latest production architecture release...</p>"
-                  value={contentHtml}
-                  onChange={(e) => setContentHtml(e.target.value)}
-                  rows={8}
-                  className="font-mono text-xs"
-                  required
-                />
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                    <span>Email Content (HTML or plain text) <span className="text-red-500">*</span></span>
+                  </label>
+                  <div className="flex items-center gap-1 bg-muted/60 p-0.5 rounded-lg border border-border">
+                    <button
+                      type="button"
+                      onClick={() => setBroadcastViewMode('edit')}
+                      className={`flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-md transition-colors ${
+                        broadcastViewMode === 'edit'
+                          ? 'bg-background text-foreground font-semibold shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <Code2 className="w-3 h-3" />
+                      Editor
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setBroadcastViewMode('preview')}
+                      className={`flex items-center gap-1 text-[11px] px-2.5 py-1 rounded-md transition-colors ${
+                        broadcastViewMode === 'preview'
+                          ? 'bg-background text-foreground font-semibold shadow-sm'
+                          : 'text-muted-foreground hover:text-foreground'
+                      }`}
+                    >
+                      <Eye className="w-3 h-3 text-cyan-500" />
+                      Live Preview
+                    </button>
+                  </div>
+                </div>
+
+                {broadcastViewMode === 'edit' ? (
+                  <>
+                    <Textarea
+                      placeholder="<p>Hey everyone,</p><p>Today we are diving into our latest production architecture release...</p>"
+                      value={contentHtml}
+                      onChange={(e) => setContentHtml(e.target.value)}
+                      rows={8}
+                      className="font-mono text-xs"
+                      required
+                    />
+                    <div className="text-[11px] text-muted-foreground">
+                      Tip: Supports HTML tags like &lt;p&gt;, &lt;h2&gt;, &lt;strong&gt;, &lt;ul&gt;, &lt;li&gt;, and &lt;a href="..."&gt;. Switch to <strong>Live Preview</strong> anytime to check formatting.
+                    </div>
+                  </>
+                ) : (
+                  <div className="rounded-xl border border-border overflow-hidden bg-[#0b0f19] p-4 text-left shadow-inner">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-cyan-400 mb-2 flex items-center justify-between border-b border-gray-800 pb-2">
+                      <span>Live Branded Email Preview</span>
+                      <span className="text-gray-500 font-mono">620px Boxed Email Template</span>
+                    </div>
+
+                    <div className="max-w-[560px] mx-auto bg-[#111827] border border-[#1f2937] rounded-xl overflow-hidden shadow-2xl">
+                      {/* Top Gradient */}
+                      <div className="h-1 bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500" />
+
+                      {/* Branded Header */}
+                      <div className="p-5 border-b border-[#1f2937] flex items-center justify-between">
+                        <div>
+                          <div className="text-base font-bold text-white tracking-tight">
+                            Dev47 <span className="text-cyan-400">Insights</span>
+                          </div>
+                          <div className="text-[11px] text-gray-400">Future Insights Newsletter</div>
+                        </div>
+                      </div>
+
+                      {/* Header Title / Subject */}
+                      <div className="px-5 pt-4 pb-2">
+                        <div className="text-lg font-bold text-white">
+                          {title || subject || 'Newsletter Headline Here'}
+                        </div>
+                        {subject && title && (
+                          <div className="text-xs text-gray-400 mt-0.5">Subject: {subject}</div>
+                        )}
+                      </div>
+
+                      {/* Rendered HTML content */}
+                      <div className="px-5 py-4 text-sm text-gray-200 leading-relaxed border-b border-[#1f2937]/50 min-h-[100px]">
+                        {contentHtml.trim() ? (
+                          <div
+                            className="prose prose-invert prose-sm max-w-none space-y-2 [&_a]:text-cyan-400 [&_a]:underline [&_h2]:text-white [&_h2]:text-base [&_h2]:font-bold [&_p]:text-gray-300"
+                            dangerouslySetInnerHTML={{ __html: contentHtml }}
+                          />
+                        ) : (
+                          <div className="text-gray-500 italic text-xs py-4 text-center">
+                            Write HTML or text in the editor to see your live email preview here...
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Footer Preview */}
+                      <div className="p-4 text-center bg-[#0d131f] text-[10px] text-gray-500 space-y-1">
+                        <div>You're receiving this because you subscribed to Dev47 Future Insights.</div>
+                        <div>
+                          © {new Date().getFullYear()} Aman Kayare · Dev47 · <span className="text-gray-400 underline cursor-pointer">Unsubscribe</span> anytime with one click.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               {confirmSend && (
