@@ -726,8 +726,63 @@ export default function BlogHome() {
         </div>
       </header>
 
-      {/* ── Main Content ─────────────────────────────────────────────────────── */}
-      <div className="relative py-10">
+      {/* ── Horizontal Categories Menu (Centered between Header & Base Card) ── */}
+      <section className="relative z-40 pt-6 pb-2 sm:pt-8 sm:pb-3">
+        <div className="container mx-auto max-w-7xl px-4 flex flex-col items-center justify-center gap-3">
+          <div className="inline-flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap rounded-full border border-primary/30 bg-card/70 dark:bg-card/40 backdrop-blur-xl p-1.5 shadow-[0_0_18px_rgba(20,198,218,0.08)] vs-scrollbar">
+            <button
+              className={`rounded-full border px-4 py-2 text-sm transition-all duration-200 ${!hasActiveFilters
+                ? 'border-primary/50 bg-primary/10 text-primary font-semibold shadow-sm shadow-primary/10'
+                : 'border-transparent text-muted-foreground hover:border-primary/25 hover:bg-primary/5 hover:text-foreground font-medium'
+                }`}
+              onClick={clearAllFilters}
+            >
+              All
+            </button>
+            {!isCategoriesLoading &&
+              !categoriesError &&
+              categories.map((cat) => (
+                <button
+                  key={cat.id}
+                  className={`rounded-full border px-4 py-2 text-sm transition-all duration-200 ${selectedCategory === cat.id
+                    ? 'border-primary/50 bg-primary/10 text-primary font-semibold shadow-sm shadow-primary/10'
+                    : 'border-transparent text-muted-foreground hover:border-primary/25 hover:bg-primary/5 hover:text-foreground font-medium'
+                    }`}
+                  onClick={() => setSelectedCategory(cat.id)}
+                >
+                  {cat.name}
+                </button>
+              ))}
+          </div>
+
+          {(selectedTag || search) && (
+            <div className="flex flex-wrap items-center justify-center gap-3 text-[13px] text-muted-foreground">
+              {selectedTag && (
+                <button
+                  className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 font-medium text-primary hover:bg-primary/10 transition-colors"
+                  onClick={clearTagFilter}
+                >
+                  #{selectedTag}
+                  <X className="w-3 h-3" />
+                </button>
+              )}
+              {search && (
+                <div className="flex items-center gap-2">
+                  <span>
+                    Results for: <span className="font-semibold text-foreground">"{search}"</span>
+                  </span>
+                  <button onClick={() => setSearch('')} className="hover:text-destructive transition-colors">
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Main Content (Base Card) ────────────────────────────────────────── */}
+      <div className="relative pt-4 pb-12 sm:pt-6 sm:pb-16">
         <main className="container mx-auto max-w-7xl bg-background border border-border/40 shadow-2xl rounded-3xl p-6 sm:p-8 lg:p-10 mx-4 sm:mx-6 lg:mx-auto">
 
           {/* ── Futuristic, Modern & Dynamic Newsletter Banner ──────────────── */}
@@ -808,61 +863,6 @@ export default function BlogHome() {
 
             {/* Left Column (Main Content) */}
             <div className="flex-1 min-w-0">
-
-              {/* ── Category + Tag Filter Tabs ────────────────────────────── */}
-              <div className="mb-10 space-y-3">
-                <div className="flex justify-center">
-                  <div className="inline-flex max-w-full items-center gap-1 overflow-x-auto whitespace-nowrap rounded-full border border-primary/30 bg-primary/5 p-1.5 shadow-[0_0_18px_rgba(20,198,218,0.08)] vs-scrollbar">
-                    <button
-                      className={`rounded-full border px-4 py-2 text-sm transition-all duration-200 ${!hasActiveFilters
-                        ? 'border-primary/50 bg-primary/10 text-primary font-semibold shadow-sm shadow-primary/10'
-                        : 'border-transparent text-muted-foreground hover:border-primary/25 hover:bg-primary/5 hover:text-foreground font-medium'
-                        }`}
-                      onClick={clearAllFilters}
-                    >
-                      All
-                    </button>
-                    {!isCategoriesLoading &&
-                      !categoriesError &&
-                      categories.map((cat) => (
-                        <button
-                          key={cat.id}
-                          className={`rounded-full border px-4 py-2 text-sm transition-all duration-200 ${selectedCategory === cat.id
-                            ? 'border-primary/50 bg-primary/10 text-primary font-semibold shadow-sm shadow-primary/10'
-                            : 'border-transparent text-muted-foreground hover:border-primary/25 hover:bg-primary/5 hover:text-foreground font-medium'
-                            }`}
-                          onClick={() => setSelectedCategory(cat.id)}
-                        >
-                          {cat.name}
-                        </button>
-                      ))}
-                  </div>
-                </div>
-
-                {(selectedTag || search) && (
-                  <div className="flex flex-wrap items-center justify-center gap-3 text-[13px] text-muted-foreground">
-                    {selectedTag && (
-                      <button
-                        className="flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/5 px-3 py-1.5 font-medium text-primary hover:bg-primary/10 transition-colors"
-                        onClick={clearTagFilter}
-                      >
-                        #{selectedTag}
-                        <X className="w-3 h-3" />
-                      </button>
-                    )}
-                    {search && (
-                      <div className="flex items-center gap-2">
-                        <span>
-                          Results for: <span className="font-semibold text-foreground">"{search}"</span>
-                        </span>
-                        <button onClick={() => setSearch('')} className="hover:text-destructive transition-colors">
-                          <X className="w-3 h-3" />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
 
               {/* ── Top Featured Section (hidden when filters are active) ──────── */}
               {!isLoading && featuredBlogs.length > 0 && !hasActiveFilters && (
