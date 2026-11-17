@@ -18,6 +18,7 @@ import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { apiGet, apiPut, apiDelete, apiUrl } from '@/utils/api';
 import { Switch } from '@/components/ui/switch';
 import { NewsletterBannerModal } from '@/components/admin/NewsletterBannerModal';
+import { NewsletterSubscribersModal } from '@/components/admin/NewsletterSubscribersModal';
 import AdminLayout from '@/components/admin/AdminLayout';
 import {
   DropdownMenu,
@@ -69,6 +70,7 @@ export default function AdminDashboard() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [bannerModalOpen, setBannerModalOpen] = useState(false);
+  const [subscribersModalOpen, setSubscribersModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
 
   // Delete confirmation setup for messages
@@ -1047,12 +1049,20 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex items-center gap-2 w-full md:w-auto">
                       <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setSubscribersModalOpen(true)}
+                        className="rounded-full text-xs font-bold uppercase tracking-wider px-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500 gap-1.5 shadow-sm"
+                      >
+                        <Users className="w-3.5 h-3.5" /> Subscribers & Broadcast
+                      </Button>
+                      <Button
                         variant="outline"
                         size="sm"
                         onClick={() => setBannerModalOpen(true)}
                         className="rounded-full text-xs font-bold uppercase tracking-wider px-4 border-cornflower-200 dark:border-cornflower-500/30 gap-1.5 bg-white/50 dark:bg-black/20 hover:bg-cornflower-500/10"
                       >
-                        <Edit className="w-3.5 h-3.5" /> Edit Content
+                        <Edit className="w-3.5 h-3.5" /> Edit Banner
                       </Button>
                       <Button
                         variant="ghost"
@@ -1075,6 +1085,12 @@ export default function AdminDashboard() {
         isOpen={bannerModalOpen}
         onClose={() => setBannerModalOpen(false)}
         initialData={bannerSettings}
+      />
+
+      {/* Newsletter Subscribers & Broadcast Modal */}
+      <NewsletterSubscribersModal
+        isOpen={subscribersModalOpen}
+        onClose={() => setSubscribersModalOpen(false)}
       />
 
       {/* Delete Confirmation Dialog */}
