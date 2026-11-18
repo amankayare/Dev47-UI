@@ -125,7 +125,7 @@ export const apiGet = async (url: string): Promise<any> => {
   
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `Failed to fetch from ${url}`);
+    throw new Error(error.message || error.error || `Failed to fetch from ${url}`);
   }
   
   return response.json();
@@ -139,7 +139,7 @@ export const apiPost = async (url: string, data: any): Promise<any> => {
   
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `Failed to post to ${url}`);
+    throw new Error(error.message || error.error || `Failed to post to ${url}`);
   }
   
   return response.json();
@@ -153,7 +153,7 @@ export const apiPut = async (url: string, data: any): Promise<any> => {
   
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `Failed to update ${url}`);
+    throw new Error(error.message || error.error || `Failed to update ${url}`);
   }
   
   return response.json();
@@ -166,7 +166,7 @@ export const apiDelete = async (url: string): Promise<any> => {
   
   if (!response.ok) {
     const error = await response.json().catch(() => ({}));
-    throw new Error(error.message || `Failed to delete from ${url}`);
+    throw new Error(error.message || error.error || `Failed to delete from ${url}`);
   }
   
   // Handle 204 No Content response (successful delete with no body)
