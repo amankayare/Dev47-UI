@@ -41,6 +41,12 @@ export const apiAssetUrl = (path: string): string => {
     return path;
   }
 
+  // Convert Google Drive share/view URLs to direct Google CDN thumbnail/image URLs
+  const driveMatch = path.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+  if (driveMatch && driveMatch[1]) {
+    return `https://lh3.googleusercontent.com/d/${driveMatch[1]}`;
+  }
+
   if (/^[a-z][a-z\d+.-]*:/i.test(path)) {
     return path;
   }

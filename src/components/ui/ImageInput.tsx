@@ -100,12 +100,21 @@ export default function ImageInput({
         <div className="space-y-2">
           <Input
             value={currentUrl}
-            onChange={(e) => onUrlChange(ensureHttpsProtocol(e.target.value))}
+            onChange={(e) => {
+              const raw = e.target.value.trim();
+              const withProtocol = ensureHttpsProtocol(raw);
+              const driveMatch = withProtocol.match(/drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?id=)([a-zA-Z0-9_-]+)/);
+              if (driveMatch && driveMatch[1]) {
+                onUrlChange(`https://lh3.googleusercontent.com/d/${driveMatch[1]}`);
+              } else {
+                onUrlChange(withProtocol);
+              }
+            }}
             className="border-slate-300 dark:border-slate-600 focus:border-slate-500 dark:focus:border-slate-400 focus:ring-slate-500 dark:focus:ring-slate-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
             placeholder={placeholder || `Enter ${label.toLowerCase()} URL...`}
           />
           {currentUrl && (
-            <div className="mt-2">
+            <div className="mt-2 flex items-center gap-3">
               <img
                 src={apiAssetUrl(currentUrl)}
                 alt={`${label} preview`}
@@ -113,8 +122,13 @@ export default function ImageInput({
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.display = 'none';
+                  const hint = target.parentElement?.querySelector('.img-error-hint');
+                  if (hint) (hint as HTMLElement).style.display = 'block';
                 }}
               />
+              <p className="img-error-hint text-xs text-amber-500 hidden">
+                Image preview failed to load. If using Google Drive, ensure file permissions are set to &quot;Anyone with the link can view&quot;.
+              </p>
             </div>
           )}
         </div>

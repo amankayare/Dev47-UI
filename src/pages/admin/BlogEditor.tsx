@@ -203,21 +203,19 @@ export default function BlogEditor() {
     setFormData(prev => ({
       ...prev,
       content: result.html_content,
-      title: prev.title || result.suggested_title,
-      excerpt: prev.excerpt || result.suggested_excerpt,
-      reading_time: prev.reading_time || (
+      title: result.suggested_title || prev.title,
+      excerpt: result.suggested_excerpt || prev.excerpt,
+      reading_time: (
         result.reading_time_minutes > 0
           ? String(result.reading_time_minutes)
           : prev.reading_time
       ),
-      quick_links: (prev.quick_links && prev.quick_links.length > 0) 
-        ? prev.quick_links 
-        : (result.suggested_quick_links || []),
-      tag_names: (prev.tag_names && prev.tag_names.trim())
-        ? prev.tag_names
-        : (result.suggested_tags && result.suggested_tags.length > 0)
-          ? result.suggested_tags.join(', ')
-          : prev.tag_names
+      quick_links: (result.suggested_quick_links && result.suggested_quick_links.length > 0)
+        ? result.suggested_quick_links
+        : prev.quick_links,
+      tag_names: (result.suggested_tags && result.suggested_tags.length > 0)
+        ? result.suggested_tags.join(', ')
+        : prev.tag_names
     }));
     setActiveTab('html');
     toast({
