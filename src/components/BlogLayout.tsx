@@ -239,6 +239,27 @@ export default function BlogLayout({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Auto-assign IDs to headings in article content so quick links always resolve
+  useEffect(() => {
+    const assignHeadingIds = () => {
+      const headings = document.querySelectorAll(
+        'article h1, article h2, article h3, article h4, [class*="prose"] h1, [class*="prose"] h2, [class*="prose"] h3, [class*="prose"] h4, .blog-content-container h1, .blog-content-container h2, .blog-content-container h3, .blog-content-container h4'
+      );
+      headings.forEach((heading) => {
+        if (!heading.id && heading.textContent) {
+          heading.id = heading.textContent
+            .toLowerCase()
+            .trim()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '');
+        }
+      });
+    };
+    assignHeadingIds();
+    const timer = setTimeout(assignHeadingIds, 300);
+    return () => clearTimeout(timer);
+  }, [children]);
+
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
@@ -565,10 +586,44 @@ export default function BlogLayout({
                         key={index}
                         href={link.url}
                         onClick={(e) => {
+                          if (/^https?:\/\//i.test(link.url)) {
+                            return;
+                          }
                           e.preventDefault();
-                          const urlParts = link.url.split('#');
-                          const id = urlParts.length > 1 ? urlParts[1] : urlParts[0];
-                          const element = document.getElementById(id);
+                          const rawTarget = link.url.includes('#') ? link.url.split('#')[1] : link.url;
+                          const targetId = decodeURIComponent(rawTarget).trim().toLowerCase();
+                          const slug = targetId.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+
+                          // 1. Direct ID match
+                          let element = document.getElementById(rawTarget) ||
+                                        document.getElementById(targetId) ||
+                                        document.getElementById(slug);
+
+                          // 2. Fuzzy ID match
+                          if (!element) {
+                            element = document.querySelector(`[id="${targetId}" i]`) ||
+                                      document.querySelector(`[id="${slug}" i]`) ||
+                                      document.querySelector(`[id*="${slug}" i]`);
+                          }
+
+                          // 3. Fallback: match by heading text content
+                          if (!element) {
+                            const cleanTitle = link.title.toLowerCase().trim();
+                            const headings = Array.from(
+                              document.querySelectorAll(
+                                'article h1, article h2, article h3, article h4, [class*="prose"] h1, [class*="prose"] h2, [class*="prose"] h3, [class*="prose"] h4, .blog-content-container h1, .blog-content-container h2, .blog-content-container h3, .blog-content-container h4'
+                              )
+                            );
+                            element = headings.find((el) => {
+                              const text = el.textContent?.toLowerCase().trim() || '';
+                              return (
+                                text.includes(cleanTitle) ||
+                                cleanTitle.includes(text) ||
+                                (el.id && (el.id.includes(slug) || slug.includes(el.id)))
+                              );
+                            }) as HTMLElement | null;
+                          }
+
                           if (element) {
                             const offset = 120;
                             const elementPosition = element.getBoundingClientRect().top;
@@ -576,7 +631,7 @@ export default function BlogLayout({
                             window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
                           }
                         }}
-                        className="flex items-center gap-2 text-[13px] text-muted-foreground hover:text-cyan-400 transition-colors py-2 px-3 rounded-xl hover:bg-cyan-500/5 font-medium"
+                        className="flex items-center gap-2 text-[13px] text-muted-foreground hover:text-cyan-400 transition-colors py-2 px-3 rounded-xl hover:bg-cyan-500/5 font-medium cursor-pointer"
                       >
                         <span className="text-cyan-500/50">▹</span>
                         {link.title}
