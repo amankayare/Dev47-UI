@@ -606,29 +606,68 @@ export default function BlogLayout({
                                       document.querySelector(`[id*="${slug}" i]`);
                           }
 
-                          // 3. Fallback: match by heading text content
-                          if (!element) {
+                          // 3. Smart heading search by text & keyword overlap
+                          const allHeadings = Array.from(
+                            document.querySelectorAll(
+                              '.blog-content h1, .blog-content h2, .blog-content h3, .blog-content h4, article h1, article h2, article h3, article h4'
+                            )
+                          ) as HTMLElement[];
+
+                          if (!element && allHeadings.length > 0) {
                             const cleanTitle = link.title.toLowerCase().trim();
-                            const headings = Array.from(
-                              document.querySelectorAll(
-                                'article h1, article h2, article h3, article h4, [class*="prose"] h1, [class*="prose"] h2, [class*="prose"] h3, [class*="prose"] h4, .blog-content-container h1, .blog-content-container h2, .blog-content-container h3, .blog-content-container h4'
-                              )
-                            );
-                            element = headings.find((el) => {
-                              const text = el.textContent?.toLowerCase().trim() || '';
-                              return (
-                                text.includes(cleanTitle) ||
-                                cleanTitle.includes(text) ||
-                                (el.id && (el.id.includes(slug) || slug.includes(el.id)))
-                              );
-                            }) as HTMLElement | null;
+                            const titleWords = cleanTitle.split(/[^a-z0-9]+/).filter((w) => w.length > 2);
+
+                            // 3a. Substring match
+                            element = allHeadings.find((el) => {
+                              const text = (el.textContent || '').toLowerCase().trim();
+                              return text.includes(cleanTitle) || cleanTitle.includes(text);
+                            }) || null;
+
+                            // 3b. Keyword overlap match (e.g. "AI Agents..." matches "AI Agents as Contributors...")
+                            if (!element && titleWords.length > 0) {
+                              let bestScore = 0;
+                              let bestEl: HTMLElement | null = null;
+                              for (const el of allHeadings) {
+                                const text = (el.textContent || '').toLowerCase();
+                                const score = titleWords.filter((w) => text.includes(w)).length;
+                                if (score > bestScore && score >= Math.min(2, titleWords.length)) {
+                                  bestScore = score;
+                                  bestEl = el;
+                                }
+                              }
+                              if (bestEl) {
+                                element = bestEl;
+                              }
+                            }
+                          }
+
+                          // 4. Fallback: search sections or paragraphs containing keywords
+                          if (!element) {
+                            const titleWords = link.title.toLowerCase().trim().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
+                            if (titleWords.length > 0) {
+                              const sections = Array.from(
+                                document.querySelectorAll('.blog-content section, .blog-content div, .blog-content p')
+                              ) as HTMLElement[];
+                              element = sections.find((el) => {
+                                const text = (el.textContent || '').toLowerCase();
+                                return titleWords.every((w) => text.includes(w));
+                              }) || null;
+                            }
                           }
 
                           if (element) {
-                            const offset = 120;
-                            const elementPosition = element.getBoundingClientRect().top;
-                            const offsetPosition = elementPosition + window.pageYOffset - offset;
-                            window.scrollTo({ top: offsetPosition, behavior: 'smooth' });
+                            element.style.scrollMarginTop = '120px';
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            const offsetPosition =
+                              element.getBoundingClientRect().top +
+                              (window.pageYOffset || document.documentElement.scrollTop || 0) -
+                              120;
+                            window.scrollTo({ top: Math.max(0, offsetPosition), behavior: 'smooth' });
+                          } else {
+                            toast({
+                              title: `"${link.title}"`,
+                              description: 'This section was not found in the current article text.',
+                            });
                           }
                         }}
                         className="flex items-center gap-2 text-[13px] text-muted-foreground hover:text-cyan-400 transition-colors py-2 px-3 rounded-xl hover:bg-cyan-500/5 font-medium cursor-pointer"
