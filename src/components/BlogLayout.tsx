@@ -424,7 +424,12 @@ export default function BlogLayout({
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => setLocation('/login')}
+                      onClick={() => {
+                        if (typeof window !== 'undefined') {
+                          localStorage.setItem('returnUrl', window.location.pathname + window.location.search + window.location.hash);
+                        }
+                        setLocation('/login');
+                      }}
                       className="gap-2 px-4 py-2 h-9 rounded-full border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 font-semibold text-gray-800 dark:text-gray-200"
                     >
                       <LogIn className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -518,7 +523,12 @@ export default function BlogLayout({
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => setLocation('/login')}
+                        onClick={() => {
+                          if (typeof window !== 'undefined') {
+                            localStorage.setItem('returnUrl', window.location.pathname + window.location.search + window.location.hash);
+                          }
+                          setLocation('/login');
+                        }}
                         className="w-full gap-2 px-4 py-2 h-10 rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md shadow-sm hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 font-semibold text-gray-800 dark:text-gray-200 justify-start"
                       >
                         <LogIn className="w-4 h-4 text-gray-500 dark:text-gray-400 mr-2" />

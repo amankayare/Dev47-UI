@@ -1,4 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useLocation } from 'wouter';
 import { apiGet, apiPost, apiDelete } from '@/utils/api';
 import { useToast } from '@/hooks/use-toast';
 
@@ -19,6 +20,7 @@ export interface BookmarkedBlog {
 export function useBookmarks() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
 
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   const isAuthenticated = Boolean(token);
@@ -127,10 +129,18 @@ export function useBookmarks() {
 
   const toggleBookmark = (blog: { id: number; title: string }) => {
     if (!isAuthenticated) {
-      toast({
-        title: 'Sign In Required',
-        description: 'Please sign in to save articles to your Read Later list.',
-      });
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname + window.location.search + window.location.hash;
+        localStorage.setItem('returnUrl', currentPath);
+        localStorage.setItem(
+          'authToast',
+          JSON.stringify({
+            title: 'Sign In Required',
+            description: 'Please sign in to save articles to your Read Later list.',
+          })
+        );
+      }
+      setLocation('/login');
       return;
     }
 

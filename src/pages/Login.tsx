@@ -36,14 +36,31 @@ export default function Login() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  // Check for auth error message on component mount
+  // Check for auth error message or auth toast on component mount
   useEffect(() => {
     const authError = localStorage.getItem('authError');
     if (authError) {
       setError(authError);
       localStorage.removeItem('authError'); // Clear the message after displaying
     }
-  }, []);
+
+    const authToast = localStorage.getItem('authToast');
+    if (authToast) {
+      try {
+        const parsed = JSON.parse(authToast);
+        toast({
+          title: parsed.title || 'Sign In Required',
+          description: parsed.description || 'Please sign in to continue.',
+        });
+      } catch {
+        toast({
+          title: 'Sign In Required',
+          description: authToast,
+        });
+      }
+      localStorage.removeItem('authToast'); // Clear after displaying
+    }
+  }, [toast]);
 
   const loginMutation = useMutation({
     mutationFn: async (data: LoginData): Promise<LoginResponse> => {

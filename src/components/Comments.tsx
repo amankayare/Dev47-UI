@@ -122,11 +122,18 @@ export default function Comments({ blogId }: CommentsProps) {
   const handleSubmitComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentUser) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to post a comment.",
-        variant: "destructive",
-      });
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname + window.location.search + window.location.hash;
+        localStorage.setItem('returnUrl', currentPath);
+        localStorage.setItem(
+          'authToast',
+          JSON.stringify({
+            title: 'Authentication Required',
+            description: 'Please log in to post a comment.',
+          })
+        );
+      }
+      setLocation('/login');
       return;
     }
     
@@ -145,11 +152,18 @@ export default function Comments({ blogId }: CommentsProps) {
   const handleSubmitReply = (e: React.FormEvent, parentId: number) => {
     e.preventDefault();
     if (!currentUser) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to reply to comments.",
-        variant: "destructive",
-      });
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname + window.location.search + window.location.hash;
+        localStorage.setItem('returnUrl', currentPath);
+        localStorage.setItem(
+          'authToast',
+          JSON.stringify({
+            title: 'Authentication Required',
+            description: 'Please log in to reply to comments.',
+          })
+        );
+      }
+      setLocation('/login');
       return;
     }
     
@@ -343,7 +357,12 @@ export default function Comments({ blogId }: CommentsProps) {
               <div className="flex items-center justify-center gap-3">
                 <Button
                   variant="default"
-                  onClick={() => setLocation('/login')}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('returnUrl', window.location.pathname + window.location.search + window.location.hash);
+                    }
+                    setLocation('/login');
+                  }}
                   className="gap-2 bg-primary text-primary-foreground hover:bg-primary/90"
                 >
                   <LogIn className="w-4 h-4" />
@@ -351,7 +370,12 @@ export default function Comments({ blogId }: CommentsProps) {
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() => setLocation('/register')}
+                  onClick={() => {
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('returnUrl', window.location.pathname + window.location.search + window.location.hash);
+                    }
+                    setLocation('/register');
+                  }}
                   className="gap-2 text-foreground border-border hover:bg-muted/50 hover:text-foreground"
                 >
                   <UserPlus className="w-4 h-4" />
