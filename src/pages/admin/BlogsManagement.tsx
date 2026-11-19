@@ -188,9 +188,43 @@ export default function BlogsManagement() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: number) => apiDelete(`/api/blogs/${id}`),
-    onSuccess: () => {
+    onSuccess: (_data, deletedId) => {
+      // 1. Immediately remove the deleted blog from the active query cache for instant feedback
+      queryClient.setQueryData(
+        ['/api/blogs/admin', page, pageSize, debouncedSearch, statusFilter],
+        (old: any) => {
+          if (!old) return old;
+          if (Array.isArray(old)) {
+            return old.filter((b: any) => b.id !== deletedId);
+          }
+          if (old.blogs && Array.isArray(old.blogs)) {
+            return {
+              ...old,
+              blogs: old.blogs.filter((b: any) => b.id !== deletedId),
+              total: Math.max(0, (old.total || 1) - 1),
+            };
+          }
+          return old;
+        }
+      );
+
+      // 2. Invalidate all blog queries in background
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/blogs'] });
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
+
+      // 3. Close the confirmation dialog
+      deleteConfirmation.closeConfirmDialog();
+
+      // 4. Show success notification
       toast({ title: 'Success', description: 'Blog deleted successfully.' });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Delete Failed',
+        description: error.message || 'Failed to delete blog post.',
+        variant: 'destructive',
+      });
     },
   });
 
