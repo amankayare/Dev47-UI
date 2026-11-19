@@ -13,11 +13,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, Calendar, Clock, User, Share2, BookOpen, ExternalLink, TrendingUp, Tag, Moon, Sun, LogOut, Settings, ChevronDown, LogIn, UserPlus, MoreVertical, Zap, ArrowRight } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, Share2, BookOpen, ExternalLink, TrendingUp, Tag, Moon, Sun, LogOut, Settings, ChevronDown, LogIn, UserPlus, MoreVertical, Zap, ArrowRight, Bookmark } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { apiAssetUrl, apiUrl } from '@/utils/api';
+import { useBookmarks } from '@/hooks/useBookmarks';
 
 interface BlogAuthor {
   id: number;
@@ -138,6 +139,7 @@ const PopularTagsSection = () => {
 };
 
 interface BlogLayoutProps {
+  id?: number;
   // Blog post metadata
   title: string;
   excerpt?: string;
@@ -177,6 +179,7 @@ interface BlogLayoutProps {
 }
 
 export default function BlogLayout({
+  id,
   title,
   excerpt,
   coverImage,
@@ -384,6 +387,16 @@ export default function BlogLayout({
                       </DropdownMenuItem>
 
                       <DropdownMenuItem
+                        onClick={() => setLocation('/profile?tab=bookmarks')}
+                        className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/10 text-cyan-400 mr-3 shadow-inner">
+                          <Bookmark className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">Read Later</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
                         onClick={toggleTheme}
                         className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
                       >
@@ -486,6 +499,13 @@ export default function BlogLayout({
                         Profile Settings
                       </DropdownMenuItem>
                       <DropdownMenuItem
+                        onClick={() => setLocation('/profile?tab=bookmarks')}
+                        className="cursor-pointer hover:bg-accent"
+                      >
+                        <Bookmark className="w-4 h-4 mr-2 text-cyan-400" />
+                        Read Later
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
                         onClick={handleLogout}
                         className="cursor-pointer text-destructive hover:bg-destructive/10 focus:text-destructive"
                       >
@@ -534,6 +554,7 @@ export default function BlogLayout({
             <div className="space-y-8 bg-background/40 backdrop-blur-xl border border-white/10 rounded-xl p-6 lg:p-10 shadow-2xl">
               {/* Hero Section */}
               <BlogHero
+                id={id}
                 title={title}
                 excerpt={excerpt}
                 featured={featured}
@@ -769,6 +790,7 @@ export default function BlogLayout({
 
 // Hero Section Component
 interface BlogHeroProps {
+  id?: number;
   title: string;
   excerpt?: string;
   featured: boolean;
@@ -780,7 +802,10 @@ interface BlogHeroProps {
   onShare?: () => void;
 }
 
-function BlogHero({ title, excerpt, featured, author, date, readingTime, tags, category, onShare }: BlogHeroProps) {
+function BlogHero({ id, title, excerpt, featured, author, date, readingTime, tags, category, onShare }: BlogHeroProps) {
+  const { isBookmarked, toggleBookmark } = useBookmarks();
+  const bookmarked = id ? isBookmarked(id) : false;
+
   return (
     <header className="space-y-6 pt-2">
       {/* Top Badges */}
@@ -848,22 +873,40 @@ function BlogHero({ title, excerpt, featured, author, date, readingTime, tags, c
           )}
         </div>
 
-        {onShare && (
-          <Button
-            variant="default"
-            size="lg"
-            onClick={onShare}
-            className="group relative flex items-center gap-3 px-8 py-6 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-[100%_0] text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-500 transform hover:scale-105 border-0 overflow-hidden"
-          >
-            {/* Animated Glow Effect */}
-            <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+        <div className="flex flex-wrap items-center gap-3">
+          {id && (
+            <Button
+              variant="outline"
+              size="lg"
+              onClick={() => toggleBookmark({ id, title })}
+              className={`flex items-center gap-2.5 px-6 py-6 rounded-full font-bold text-xs uppercase tracking-wider transition-all duration-300 border ${
+                bookmarked
+                  ? 'bg-cyan-500/15 border-cyan-500/50 text-cyan-400 shadow-lg shadow-cyan-500/20 hover:bg-cyan-500/25'
+                  : 'border-white/10 hover:border-cyan-500/30 hover:bg-cyan-500/5 text-foreground'
+              }`}
+            >
+              <Bookmark className={`w-4 h-4 transition-all ${bookmarked ? 'fill-cyan-400 text-cyan-400' : 'text-muted-foreground'}`} />
+              <span>{bookmarked ? 'Saved' : 'Read Later'}</span>
+            </Button>
+          )}
 
-            <div className="relative flex items-center gap-3">
-              <Share2 className="w-4 h-4 text-white animate-pulse" />
-              <span>Share Article</span>
-            </div>
-          </Button>
-        )}
+          {onShare && (
+            <Button
+              variant="default"
+              size="lg"
+              onClick={onShare}
+              className="group relative flex items-center gap-3 px-8 py-6 rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 bg-[length:200%_auto] hover:bg-[100%_0] text-white font-black uppercase tracking-[0.2em] text-[10px] shadow-xl shadow-indigo-500/25 hover:shadow-indigo-500/40 transition-all duration-500 transform hover:scale-105 border-0 overflow-hidden"
+            >
+              {/* Animated Glow Effect */}
+              <div className="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-xl" />
+
+              <div className="relative flex items-center gap-3">
+                <Share2 className="w-4 h-4 text-white animate-pulse" />
+                <span>Share Article</span>
+              </div>
+            </Button>
+          )}
+        </div>
       </div>
 
       {/* Tags */}

@@ -75,6 +75,7 @@ export default function BlogPost() {
 
   return (
     <BlogLayout
+      id={post?.id}
       title={post?.title || ''}
       excerpt={post?.excerpt}
       coverImage={post?.cover_image}
