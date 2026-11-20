@@ -9,10 +9,11 @@ import { ProfileModal } from '@/components/admin/ProfileModal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
-import { LogOut, Users, MessageSquare, FolderOpen, FileText, Award, BarChart3, User, Briefcase, Code, ShieldCheck, Sun, Moon, ArrowLeft, Eye, EyeOff, Trash2, Settings, ChevronDown, Mail, Clock, Edit } from 'lucide-react';
+import { LogOut, Users, MessageSquare, FolderOpen, FileText, Award, BarChart3, User, Briefcase, Code, ShieldCheck, Sun, Moon, ArrowLeft, Eye, EyeOff, Trash2, Settings, ChevronDown, ChevronRight, Mail, Clock, Edit, Sparkles, Shield } from 'lucide-react';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { apiGet, apiPut, apiDelete, apiUrl } from '@/utils/api';
@@ -93,7 +94,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.slice(1); // Remove the '#'
-      if (hash && ['overview', 'users', 'messages', 'content'].includes(hash)) {
+      if (hash && ['overview', 'users', 'messages', 'content', 'settings'].includes(hash)) {
         setActiveTab(hash);
       }
     };
@@ -329,35 +330,230 @@ export default function AdminDashboard() {
 
   if (!currentUser) return null;
 
+  const navItems = [
+    {
+      id: 'overview',
+      label: 'Overview',
+      description: 'System metrics & insights',
+      icon: BarChart3,
+    },
+    {
+      id: 'users',
+      label: 'Users & Roles',
+      description: 'Directory & access control',
+      icon: Users,
+      badge: stats?.users_count !== undefined ? stats.users_count : undefined,
+    },
+    {
+      id: 'messages',
+      label: 'Inquiries & Messages',
+      description: 'Contact inquiries & inbox',
+      icon: MessageSquare,
+      badge: typedMessagesData?.counts?.unread > 0 ? typedMessagesData.counts.unread : undefined,
+      badgeVariant: 'destructive' as const,
+    },
+    {
+      id: 'content',
+      label: 'Content Atelier',
+      description: 'Blogs, projects & portfolio',
+      icon: FolderOpen,
+      badge: (stats?.projects_count || 0) + (stats?.blogs_count || 0) > 0 ? (stats?.projects_count || 0) + (stats?.blogs_count || 0) : undefined,
+    },
+    {
+      id: 'settings',
+      label: 'Platform & Banner',
+      description: 'Promotional banner & newsletters',
+      icon: Settings,
+      badge: bannerSettings?.is_visible ? 'Active' : undefined,
+    },
+  ];
+
   return (
     <AdminLayout title="Admin Dashboard" backTo="/">
       <div className="w-full max-w-7xl mx-auto space-y-6 sm:space-y-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6 sm:space-y-10">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto p-1.5 gap-2 bg-cornflower-500/10 dark:bg-cornflower-500/10 rounded-[2rem] border border-cornflower-500/20 dark:border-cornflower-500/20 backdrop-blur-md">
-              <TabsTrigger value="overview" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-full data-[state=active]:bg-cornflower-500 data-[state=active]:text-white shadow-sm transition-all duration-300">
-                <BarChart3 className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate font-bold">Overview</span>
-              </TabsTrigger>
-              <TabsTrigger value="users" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-full data-[state=active]:bg-cornflower-500 data-[state=active]:text-white shadow-sm transition-all duration-300">
-                <Users className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate font-bold">Users</span>
-              </TabsTrigger>
-              <TabsTrigger value="messages" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-full data-[state=active]:bg-cornflower-500 data-[state=active]:text-white shadow-sm transition-all duration-300 relative">
-                <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate font-bold">Messages</span>
-                {typedMessagesData?.counts?.unread > 0 && (
-                  <Badge variant="destructive" className="absolute -top-0.5 -right-0.5 sm:relative sm:top-0 sm:right-0 sm:ml-1 px-1.5 py-0.5 text-xs h-4 min-w-4 rounded-full border-2 border-white dark:border-cornflower-950">
-                    {typedMessagesData.counts.unread}
-                  </Badge>
+        {/* Mobile Horizontal Pill Selector */}
+        <div className="lg:hidden flex gap-2 overflow-x-auto pb-2 scrollbar-none">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeTab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => {
+                  setActiveTab(item.id);
+                  if (item.id === 'overview') {
+                    window.history.replaceState(null, '', window.location.pathname);
+                  } else {
+                    window.history.replaceState(null, '', `#${item.id}`);
+                  }
+                }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl text-xs font-bold whitespace-nowrap transition-all border ${
+                  isActive
+                    ? 'bg-cornflower-500 text-white border-cornflower-500 shadow-md shadow-cornflower-500/20'
+                    : 'bg-card/50 border-cornflower-200/40 dark:border-cornflower-500/15 text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                {item.label}
+                {item.badge !== undefined && (
+                  <span
+                    className={`px-1.5 py-0.5 rounded-full text-[10px] font-black ${
+                      item.badgeVariant === 'destructive'
+                        ? 'bg-red-500 text-white'
+                        : isActive
+                        ? 'bg-white text-cornflower-700'
+                        : 'bg-cornflower-500/20 text-cornflower-600 dark:text-cornflower-300'
+                    }`}
+                  >
+                    {item.badge}
+                  </span>
                 )}
-              </TabsTrigger>
-              <TabsTrigger value="content" className="flex items-center justify-center gap-2 text-xs sm:text-sm px-4 py-2 sm:py-2.5 rounded-full data-[state=active]:bg-cornflower-500 data-[state=active]:text-white shadow-sm transition-all duration-300">
-                <FolderOpen className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden xs:inline truncate font-bold">Content</span>
-              </TabsTrigger>
-            </TabsList>
+              </button>
+            );
+          })}
+        </div>
 
-            <TabsContent value="overview" className="space-y-6 sm:space-y-8 px-1 sm:px-0">
+        {/* 2-Column Vertical Navigation Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+          {/* Left Column: Vertical Navigation Sidebar */}
+          <aside className="lg:col-span-4 space-y-6 lg:sticky lg:top-24">
+            {/* Admin Identity Micro-Card */}
+            <div className="rounded-3xl border border-cornflower-200/50 dark:border-cornflower-500/15 bg-card/60 backdrop-blur-xl p-6 shadow-sm relative overflow-hidden">
+              <div className="absolute top-0 right-0 p-4 opacity-5 pointer-events-none">
+                <ShieldCheck className="w-24 h-24 text-cornflower-600" />
+              </div>
+              <div className="flex items-center gap-4 relative z-10">
+                <Avatar className="h-14 w-14 border-2 border-cornflower-500/40 ring-4 ring-cornflower-500/10 shadow-md">
+                  <AvatarFallback className="bg-gradient-to-tr from-cornflower-600 via-indigo-600 to-purple-600 text-white font-black text-xl">
+                    {currentUser.username.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="font-bold text-lg text-foreground tracking-tight truncate">
+                      {currentUser.username}
+                    </h2>
+                    <Badge className="bg-cornflower-500/15 text-cornflower-600 dark:text-cornflower-400 border border-cornflower-500/30 text-[10px] px-2 py-0.5 font-bold uppercase tracking-wider">
+                      <ShieldCheck className="w-3 h-3 mr-1" />
+                      Master Admin
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground truncate">{currentUser.email}</p>
+                  <div className="flex items-center gap-2 pt-1">
+                    <span className="inline-flex items-center gap-1.5 text-[11px] font-mono text-green-600 dark:text-green-400">
+                      <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                      Console Active
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Vertical Navigation Menu */}
+            <div className="rounded-3xl border border-cornflower-200/50 dark:border-cornflower-500/15 bg-card/60 backdrop-blur-xl p-3 shadow-sm space-y-1.5">
+              <div className="px-3 py-2 text-[11px] font-black uppercase tracking-wider text-cornflower-700/60 dark:text-cornflower-300/60">
+                Administration
+              </div>
+
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => {
+                      setActiveTab(item.id);
+                      if (item.id === 'overview') {
+                        window.history.replaceState(null, '', window.location.pathname);
+                      } else {
+                        window.history.replaceState(null, '', `#${item.id}`);
+                      }
+                    }}
+                    className={`w-full group flex items-center justify-between p-3.5 rounded-2xl transition-all duration-300 text-left border ${
+                      isActive
+                        ? 'bg-gradient-to-r from-cornflower-500/20 via-cornflower-500/10 to-transparent border-cornflower-500/40 text-foreground shadow-lg shadow-cornflower-500/10 font-bold'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-cornflower-500/5 hover:border-cornflower-500/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div
+                        className={`p-2.5 rounded-xl transition-all duration-300 ${
+                          isActive
+                            ? 'bg-cornflower-500 text-white shadow-md shadow-cornflower-500/30'
+                            : 'bg-cornflower-500/10 text-cornflower-600 dark:text-cornflower-400 group-hover:bg-cornflower-500/20 group-hover:text-foreground'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 flex-shrink-0" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm tracking-tight truncate">
+                            {item.label}
+                          </span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground/80 truncate font-normal">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0 ml-2">
+                      {item.badge !== undefined && (
+                        <Badge
+                          variant={item.badgeVariant === 'destructive' ? 'destructive' : 'secondary'}
+                          className={`text-xs px-2 py-0.5 rounded-full font-bold shadow-sm ${
+                            item.badgeVariant === 'destructive'
+                              ? 'bg-red-500 text-white animate-pulse'
+                              : 'bg-cornflower-500/15 text-cornflower-600 dark:text-cornflower-300 border border-cornflower-500/30'
+                          }`}
+                        >
+                          {item.badge}
+                        </Badge>
+                      )}
+                      <ChevronRight
+                        className={`w-4 h-4 text-muted-foreground/40 transition-transform group-hover:translate-x-0.5 ${
+                          isActive ? 'text-cornflower-500 dark:text-cornflower-400 opacity-100' : 'opacity-0 group-hover:opacity-100'
+                        }`}
+                      />
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Quick Portals Shortcuts */}
+            <div className="rounded-3xl border border-cornflower-200/50 dark:border-cornflower-500/15 bg-card/60 backdrop-blur-xl p-5 shadow-sm space-y-3">
+              <div className="flex items-center justify-between text-xs font-bold text-muted-foreground uppercase tracking-wider">
+                <span>Quick Portals</span>
+                <span className="text-[10px] text-cornflower-500 font-mono">LIVE</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/blogs', '_blank')}
+                  className="w-full text-xs font-semibold rounded-xl border-cornflower-200/50 dark:border-cornflower-500/20 hover:bg-cornflower-500/10 justify-start"
+                >
+                  <FileText className="w-3.5 h-3.5 mr-1.5 text-cornflower-500" />
+                  Blog Portal ↗
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/', '_blank')}
+                  className="w-full text-xs font-semibold rounded-xl border-cornflower-200/50 dark:border-cornflower-500/20 hover:bg-cornflower-500/10 justify-start"
+                >
+                  <FolderOpen className="w-3.5 h-3.5 mr-1.5 text-cornflower-500" />
+                  Portfolio ↗
+                </Button>
+              </div>
+            </div>
+          </aside>
+
+          {/* Right Column: Tab View Content */}
+          <main className="lg:col-span-8 min-w-0 space-y-6 sm:space-y-8">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsContent value="overview" className="mt-0 space-y-6 sm:space-y-8 px-1 sm:px-0">
               {/* Ghibli-style Welcome Header - Cyberpunk cornflower */}
               <div className="relative overflow-hidden text-center space-y-3 p-8 sm:p-12 rounded-[2rem] bg-gradient-to-b from-cornflower-100 via-cornflower-50 to-white dark:from-cornflower-950 dark:via-cornflower-900/50 dark:to-black/40 shadow-sm border border-cornflower-200/50 dark:border-cornflower-500/10">
                 {/* Decorative Neon Pulse */}
@@ -373,7 +569,7 @@ export default function AdminDashboard() {
               </div>
 
               {/* Ghibli-style Stats Cards */}
-              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
+              <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-5">
                 {/* Card 1: Projects */}
                 <Card className="admin-overview-card relative overflow-hidden group hover:-translate-y-2 hover:shadow-2xl hover:shadow-cornflower-500/30 transition-all duration-500 rounded-3xl border-0 bg-gradient-to-br from-card to-card/95 dark:from-cornflower-950/80 dark:to-cornflower-900/60">
                   <div className="absolute -right-6 -top-6 w-32 h-32 bg-cornflower-300/20 dark:bg-cornflower-500/10 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700"></div>
@@ -1077,8 +1273,133 @@ export default function AdminDashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
+
+            {/* Platform & Banner Settings Tab */}
+            <TabsContent value="settings" className="mt-0 space-y-6 sm:space-y-8 px-1 sm:px-0">
+              <div className="relative overflow-hidden space-y-3 p-8 sm:p-10 rounded-[2rem] bg-gradient-to-b from-cornflower-100 via-cornflower-50 to-white dark:from-cornflower-950 dark:via-cornflower-900/50 dark:to-black/40 shadow-sm border border-cornflower-200/50 dark:border-cornflower-500/10">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-cornflower-500/10 border border-cornflower-500/20 text-cornflower-600 dark:text-cornflower-400 text-xs font-semibold uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5" />
+                  System Configuration
+                </div>
+                <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-cornflower-900 dark:text-cornflower-50">
+                  Platform & Promotion Settings
+                </h2>
+                <p className="text-sm sm:text-base font-medium text-cornflower-700/80 dark:text-cornflower-300/80 max-w-2xl">
+                  Configure the global promotional banner, broadcast to subscribers, and manage platform-wide display properties.
+                </p>
+              </div>
+
+              {/* Newsletter Banner Dynamic Management */}
+              <Card className="admin-content-card relative overflow-hidden rounded-[2.5rem] border-0 bg-gradient-to-br from-card to-card/95 dark:from-cornflower-950/80 dark:to-cornflower-900/60 shadow-xl border border-cornflower-200/50 dark:border-cornflower-500/15">
+                <CardHeader className="bg-transparent border-b border-cornflower-200/50 dark:border-cornflower-500/15 p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <CardTitle className="flex items-center gap-3 text-xl font-black text-cornflower-950 dark:text-cornflower-50">
+                      <div className="p-3 bg-cyan-500/10 dark:bg-cyan-500/20 text-cyan-600 dark:text-cyan-400 rounded-2xl shadow-sm border border-cyan-500/20">
+                        <Mail className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <span>Dev47 Promotional Banner</span>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge
+                            variant="secondary"
+                            className={
+                              bannerSettings?.is_visible ?? true
+                                ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5"
+                                : "bg-muted text-muted-foreground border border-border text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5"
+                            }
+                          >
+                            {bannerSettings?.is_visible ?? true ? "● Visible to Public" : "○ Hidden from Public"}
+                          </Badge>
+                          <Badge
+                            variant="outline"
+                            className="bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border-cyan-500/30 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5"
+                          >
+                            {bannerSettings?.banner_type === 'html'
+                              ? 'Custom HTML'
+                              : bannerSettings?.banner_type === 'image'
+                              ? 'Image Banner'
+                              : 'Newsletter Form'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </CardTitle>
+
+                    {/* Toggle Switch */}
+                    <div className="flex items-center gap-3 bg-cornflower-500/5 dark:bg-black/30 px-5 py-3 rounded-2xl border border-cornflower-200/40 dark:border-cornflower-500/15">
+                      <span className="text-xs font-black uppercase tracking-wider text-cornflower-900 dark:text-cornflower-100">
+                        {bannerSettings?.is_visible ?? true ? "Visible" : "Hidden"}
+                      </span>
+                      <Switch
+                        checked={bannerSettings?.is_visible ?? true}
+                        disabled={toggleBannerMutation.isPending}
+                        onCheckedChange={(checked) => toggleBannerMutation.mutate(checked)}
+                        aria-label="Toggle newsletter banner visibility"
+                      />
+                    </div>
+                  </div>
+                  <CardDescription className="text-cornflower-800/70 dark:text-cornflower-200/70 font-medium mt-3">
+                    Control the promotional newsletter banner displayed across the Blog Home page (/blogs). When toggled off, the banner is hidden for all website visitors.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="p-8">
+                  <div className="p-5 rounded-2xl bg-cyan-500/5 border border-cyan-500/10 dark:bg-cyan-950/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="text-xs font-bold uppercase tracking-widest text-cyan-600 dark:text-cyan-400">
+                        Live Preview ({bannerSettings?.banner_type === 'html' ? 'Custom HTML' : bannerSettings?.banner_type === 'image' ? 'Image Banner' : 'Newsletter Form'})
+                      </div>
+                      {bannerSettings?.banner_type === 'html' ? (
+                        <div className="font-mono text-xs text-muted-foreground line-clamp-1 max-w-2xl bg-black/30 px-2 py-1 rounded">
+                          {bannerSettings.html_content ? bannerSettings.html_content.slice(0, 120) + '...' : 'Custom HTML markup'}
+                        </div>
+                      ) : bannerSettings?.banner_type === 'image' ? (
+                        <div className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
+                          <span className="font-semibold text-foreground">Image:</span> {bannerSettings.image_url || 'No image URL set'} · Position: {bannerSettings.image_position_x ?? 50}%, {bannerSettings.image_position_y ?? 50}% ({Math.round((bannerSettings.image_scale || 1) * 100)}% zoom)
+                        </div>
+                      ) : (
+                        <>
+                          <div className="font-bold text-foreground text-sm">
+                            {bannerSettings?.title || "Dev47 Future Insights"} · <span className="text-xs font-normal text-muted-foreground">{bannerSettings?.badge || "Newsletter"}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground line-clamp-1 max-w-2xl">
+                            {bannerSettings?.description || "Stay ahead of the curve. Get high-signal, zero-noise articles on modern web architecture, advanced UI/UX, and AI integrations."}
+                          </p>
+                        </>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2 w-full md:w-auto">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        onClick={() => setSubscribersModalOpen(true)}
+                        className="rounded-full text-xs font-bold uppercase tracking-wider px-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white hover:from-cyan-500 hover:to-blue-500 gap-1.5 shadow-sm"
+                      >
+                        <Users className="w-3.5 h-3.5" /> Subscribers & Broadcast
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setBannerModalOpen(true)}
+                        className="rounded-full text-xs font-bold uppercase tracking-wider px-4 border-cornflower-200 dark:border-cornflower-500/30 gap-1.5 bg-white/50 dark:bg-black/20 hover:bg-cornflower-500/10"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> Edit Banner
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => window.open('/blogs', '_blank')}
+                        className="rounded-full text-xs font-bold uppercase tracking-wider px-4 hover:bg-cornflower-500/10"
+                      >
+                        View on Blog ↗
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
           </Tabs>
-        </div>
+        </main>
+      </div>
+    </div>
 
       {/* Newsletter Banner Edit Modal */}
       <NewsletterBannerModal

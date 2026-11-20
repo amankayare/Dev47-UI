@@ -33,6 +33,7 @@ interface ChangePasswordData {
 
 export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
   const queryClient = useQueryClient();
+  const [activeTab, setActiveTab] = useState<'info' | 'password'>('info');
   const [passwordData, setPasswordData] = useState<ChangePasswordData>({
     current_password: "",
     new_password: "",
@@ -127,11 +128,26 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
     setShowPasswords(prev => ({ ...prev, [field]: !prev[field] }));
   };
 
+  const modalNav = [
+    {
+      id: 'info' as const,
+      label: 'Profile Information',
+      description: 'Account identity & role',
+      icon: User,
+    },
+    {
+      id: 'password' as const,
+      label: 'Security & Password',
+      description: 'Update secret credentials',
+      icon: KeyRound,
+    },
+  ];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[640px] p-0 gap-0 max-h-[85vh] flex flex-col rounded-[2.5rem] border-cornflower-500/20 bg-popover text-popover-foreground shadow-2xl overflow-hidden">
+      <DialogContent className="sm:max-w-[780px] p-0 gap-0 max-h-[88vh] flex flex-col rounded-[2.5rem] border-cornflower-500/20 bg-popover text-popover-foreground shadow-2xl overflow-hidden">
         {/* Modern Header - Cyberpunk cornflower */}
-        <DialogHeader className="relative bg-gradient-to-r from-cornflower-50 via-cornflower-50/50 to-white dark:from-cornflower-950 dark:via-cornflower-900/40 dark:to-black/20 border-b border-cornflower-200/50 dark:border-cornflower-500/10 p-8 flex-shrink-0">
+        <DialogHeader className="relative bg-gradient-to-r from-cornflower-50 via-cornflower-50/50 to-white dark:from-cornflower-950 dark:via-cornflower-900/40 dark:to-black/20 border-b border-cornflower-200/50 dark:border-cornflower-500/10 p-6 sm:p-8 flex-shrink-0">
           <div className="absolute inset-0 bg-gradient-to-r from-cornflower-500/5 to-transparent"></div>
           <div className="relative">
             <DialogTitle className="flex items-center gap-4 text-2xl font-black text-cornflower-950 dark:text-cornflower-50 uppercase tracking-tight">
@@ -143,29 +159,76 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             <p className="text-cornflower-700/60 dark:text-cornflower-300/60 font-bold text-sm mt-1">Managing account kernels and security protocols</p>
           </div>
         </DialogHeader>
- 
-        <div className="p-8 flex-1 overflow-y-auto">
-          <Tabs defaultValue="info" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 h-12 bg-cornflower-500/5 dark:bg-cornflower-500/10 p-1.5 rounded-2xl mb-8">
-              <TabsTrigger 
-                value="info" 
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-cornflower-500 data-[state=active]:text-cornflower-600 dark:data-[state=active]:text-white rounded-xl transition-all duration-300"
-              >
-                <User className="h-4 w-4" />
-                <span className="hidden sm:inline">Profile_Kernel</span>
-                <span className="sm:hidden">Kernel</span>
-              </TabsTrigger>
-              <TabsTrigger 
-                value="password" 
-                className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest data-[state=active]:bg-white dark:data-[state=active]:bg-cornflower-500 data-[state=active]:text-cornflower-600 dark:data-[state=active]:text-white rounded-xl transition-all duration-300"
-              >
-                <KeyRound className="h-4 w-4" />
-                <span className="hidden sm:inline">Security_Protocol</span>
-                <span className="sm:hidden">Security</span>
-              </TabsTrigger>
-            </TabsList>
-            {/* Profile Info Tab */}
-            <TabsContent value="info" className="space-y-6">
+
+        <div className="p-4 sm:p-6 flex-1 overflow-y-auto">
+          {/* Mobile Horizontal Pill Selector */}
+          <div className="md:hidden flex gap-2 overflow-x-auto pb-4 scrollbar-none">
+            {modalNav.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setActiveTab(item.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                    isActive
+                      ? 'bg-cornflower-500 text-white border-cornflower-500 shadow-sm'
+                      : 'bg-cornflower-500/5 border-cornflower-200/30 dark:border-cornflower-500/10 text-muted-foreground'
+                  }`}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {item.label}
+                </button>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-start">
+            {/* Left Column: Vertical Navigation */}
+            <aside className="hidden md:block md:col-span-4 space-y-2 rounded-2xl border border-cornflower-200/40 dark:border-cornflower-500/15 bg-cornflower-500/5 p-2.5">
+              <div className="px-3 py-1.5 text-[10px] font-black uppercase tracking-wider text-cornflower-700/60 dark:text-cornflower-300/60">
+                Protocols
+              </div>
+              {modalNav.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveTab(item.id)}
+                    className={`w-full group flex items-center justify-between p-3 rounded-xl transition-all duration-200 text-left border ${
+                      isActive
+                        ? 'bg-white dark:bg-cornflower-500/20 border-cornflower-500/40 text-foreground font-bold shadow-sm'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:bg-cornflower-500/10'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div
+                        className={`p-2 rounded-lg transition-all ${
+                          isActive
+                            ? 'bg-cornflower-500 text-white shadow-sm'
+                            : 'bg-cornflower-500/10 text-cornflower-600 dark:text-cornflower-400'
+                        }`}
+                      >
+                        <Icon className="w-4 h-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-bold truncate">{item.label}</div>
+                        <div className="text-[10px] text-muted-foreground/80 truncate font-normal">{item.description}</div>
+                      </div>
+                    </div>
+                  </button>
+                );
+              })}
+            </aside>
+
+            {/* Right Column: Tab Content */}
+            <div className="md:col-span-8 min-w-0">
+              <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as 'info' | 'password')} className="w-full">
+                {/* Profile Info Tab */}
+                <TabsContent value="info" className="mt-0 space-y-6">
               {profileLoading ? (
                 <div className="flex flex-col items-center justify-center py-12 gap-4">
                   <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-cornflower-600 dark:border-cornflower-400 border-r-transparent"></div>
@@ -325,7 +388,9 @@ export function ProfileModal({ isOpen, onClose }: ProfileModalProps) {
             </TabsContent>
           </Tabs>
         </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+    </div>
+  </DialogContent>
+</Dialog>
   );
 }
