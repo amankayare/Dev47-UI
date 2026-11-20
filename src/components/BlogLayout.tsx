@@ -13,7 +13,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ArrowLeft, Calendar, Clock, User, Share2, BookOpen, ExternalLink, TrendingUp, Tag, Moon, Sun, LogOut, Settings, ChevronDown, LogIn, UserPlus, MoreVertical, Zap, ArrowRight, Bookmark } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, User, Share2, BookOpen, ExternalLink, TrendingUp, Tag, Moon, Sun, LogOut, Settings, ChevronDown, LogIn, UserPlus, MoreVertical, Zap, ArrowRight, Bookmark, PenTool } from 'lucide-react';
 import { useTheme } from '@/hooks/use-theme';
 import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -357,6 +357,16 @@ export default function BlogLayout({
             {/* Desktop Authentication Section - Hidden on mobile */}
             {!isMobile && (
               <div className="flex items-center gap-3">
+                {currentUser && (currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
+                  <Button
+                    size="sm"
+                    onClick={() => setLocation('/admin/blogs/new')}
+                    className="gap-2 px-3.5 py-1.5 h-9 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md font-semibold text-xs transition-all"
+                  >
+                    <PenTool className="w-3.5 h-3.5" />
+                    Write Article
+                  </Button>
+                )}
                 {currentUser ? (
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -385,6 +395,18 @@ export default function BlogLayout({
                         </div>
                         <span className="font-medium">Profile Settings</span>
                       </DropdownMenuItem>
+
+                      {(currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
+                        <DropdownMenuItem
+                          onClick={() => setLocation('/admin/blogs/new')}
+                          className="cursor-pointer rounded-xl hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors p-2 font-medium"
+                        >
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 mr-3 shadow-inner">
+                            <PenTool className="w-4 h-4" />
+                          </div>
+                          <span>Write Article</span>
+                        </DropdownMenuItem>
+                      )}
 
                       <DropdownMenuItem
                         onClick={() => setLocation('/profile?tab=bookmarks')}
@@ -488,14 +510,29 @@ export default function BlogLayout({
                   {/* Authentication Section */}
                   {currentUser ? (
                     <>
-                      <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
-                        Logged in as <span className="font-medium text-foreground">{currentUser.username || currentUser.name}</span>
-                        {currentUser.is_admin && (
+                      <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border flex items-center justify-between">
+                        <div>
+                          Logged in as <span className="font-medium text-foreground">{currentUser.username || currentUser.name}</span>
+                        </div>
+                        {currentUser.is_admin ? (
                           <Badge variant="secondary" className="text-xs px-2 py-0.5 ml-2">
                             Admin
                           </Badge>
-                        )}
+                        ) : (currentUser.role === 'writer' || currentUser.is_writer) ? (
+                          <Badge variant="secondary" className="text-xs px-2 py-0.5 ml-2 bg-emerald-500/20 text-emerald-400">
+                            Writer
+                          </Badge>
+                        ) : null}
                       </div>
+                      {(currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
+                        <DropdownMenuItem
+                          onClick={() => setLocation('/admin/blogs/new')}
+                          className="cursor-pointer hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                        >
+                          <PenTool className="w-4 h-4 mr-2" />
+                          Write Article
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem
                         onClick={() => setLocation('/profile')}
                         className="cursor-pointer hover:bg-accent"

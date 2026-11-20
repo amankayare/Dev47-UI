@@ -39,7 +39,8 @@ import {
   Bell,
   Sparkles,
   ArrowRight,
-  Search
+  Search,
+  PenTool
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -51,6 +52,8 @@ interface UserProfileData {
   username: string;
   email: string;
   is_admin: boolean;
+  role?: string;
+  is_writer?: boolean;
   created_at: string;
   last_login: string;
 }
@@ -503,12 +506,16 @@ export default function UserProfile() {
                     <h2 className="font-bold text-lg text-foreground tracking-tight truncate">
                       {user.username}
                     </h2>
-                    {user.is_admin && (
+                    {user.is_admin ? (
                       <Badge variant="secondary" className="bg-cyan-500/10 text-cyan-400 border-cyan-500/20 text-[10px] px-2 py-0.5 font-bold">
                         <Shield className="w-3 h-3 mr-1" />
                         Admin
                       </Badge>
-                    )}
+                    ) : (user.role === 'writer' || user.is_writer) ? (
+                      <Badge variant="secondary" className="bg-emerald-500/15 text-emerald-400 border-emerald-500/30 text-[10px] px-2 py-0.5 font-bold">
+                        ✍️ Writer
+                      </Badge>
+                    ) : null}
                   </div>
                   <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                   <p className="text-[11px] text-muted-foreground/80 flex items-center gap-1 font-mono pt-1">
@@ -518,6 +525,27 @@ export default function UserProfile() {
                 </div>
               </div>
             </div>
+
+            {/* Writer & Admin Quick Portal */}
+            {(user.is_admin || user.role === 'writer' || user.is_writer) && (
+              <div className="rounded-2xl border border-emerald-500/30 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 p-5 space-y-2.5 backdrop-blur-md shadow-sm">
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-400">
+                  <Sparkles className="w-4 h-4" />
+                  Creator Studio
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  You are authorized to publish and compose articles on Dev47.
+                </p>
+                <Button
+                  size="sm"
+                  onClick={() => setLocation('/admin/blogs/new')}
+                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md mt-1 flex items-center justify-center gap-2"
+                >
+                  <PenTool className="w-3.5 h-3.5" />
+                  Write New Article
+                </Button>
+              </div>
+            )}
 
             {/* Vertical Navigation Menu */}
             <div className="rounded-2xl border border-border/50 bg-card/40 backdrop-blur-md p-3 shadow-sm space-y-1.5">

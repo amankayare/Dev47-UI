@@ -43,6 +43,8 @@ interface User {
   username: string;
   email: string;
   is_admin: boolean;
+  role?: string;
+  is_writer?: boolean;
   created_at: string;
 }
 
@@ -221,6 +223,27 @@ export default function AdminDashboard() {
       unread: number;
     };
   };
+
+  const assignRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: number; role: 'admin' | 'writer' | 'user' }) =>
+      apiPut(`/api/admin/users/${userId}/role`, { role }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      toast({
+        title: 'Role Updated',
+        description: variables.role === 'writer'
+          ? 'User promoted to Writer! Welcome email has been dispatched.'
+          : `User role changed to ${variables.role === 'admin' ? 'Grand Master (Admin)' : 'Apprentice (Member)'}.`,
+      });
+    },
+    onError: (err: any) => {
+      toast({
+        title: 'Failed to update role',
+        description: err.message || 'An error occurred while updating the role.',
+        variant: 'destructive',
+      });
+    },
+  });
 
   const toggleAdminMutation = useMutation({
     mutationFn: (userId: number) => apiPut(`/api/admin/users/${userId}/toggle-admin`, {}),
@@ -721,30 +744,86 @@ export default function AdminDashboard() {
                                 <div className="flex-1 min-w-0">
                                   <h3 className="text-lg font-black text-cornflower-900 dark:text-cornflower-50 truncate">{user.username}</h3>
                                   <p className="text-sm font-bold text-cornflower-700/60 dark:text-cornflower-300/60 truncate">{user.email}</p>
-                                  <div className="mt-1 flex items-center gap-2">
-                                    <Badge className={user.is_admin 
-                                      ? "bg-cornflower-500 text-white border-0 rounded-full text-[10px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(100, 149, 237,0.5)]" 
-                                      : "bg-cornflower-100 dark:bg-cornflower-500/10 text-cornflower-700 dark:text-cornflower-300 border-0 rounded-full text-[10px] font-black uppercase tracking-wider"}>
-                                      {user.is_admin ? "Grand Master" : "Apprentice"}
-                                    </Badge>
+                                  <div className="mt-1 flex items-center gap-2 flex-wrap">
+                                    {user.is_admin ? (
+                                      <Badge className="bg-cornflower-500 text-white border-0 rounded-full text-[10px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(100,149,237,0.5)]">
+                                        👑 Grand Master
+                                      </Badge>
+                                    ) : user.role === 'writer' || user.is_writer ? (
+                                      <Badge className="bg-emerald-500/20 text-emerald-700 dark:text-emerald-300 border border-emerald-500/40 rounded-full text-[10px] font-black uppercase tracking-wider shadow-[0_0_10px_rgba(16,185,129,0.2)]">
+                                        ✍️ Writer
+                                      </Badge>
+                                    ) : (
+                                      <Badge className="bg-cornflower-100 dark:bg-cornflower-500/10 text-cornflower-700 dark:text-cornflower-300 border-0 rounded-full text-[10px] font-black uppercase tracking-wider">
+                                        👤 Apprentice
+                                      </Badge>
+                                    )}
                                     <span className="text-[10px] font-bold text-cornflower-500/40 dark:text-cornflower-400/40 uppercase tracking-widest">
                                       Since {new Date(user.created_at).getFullYear()}
                                     </span>
                                   </div>
                                 </div>
                               </div>
-                              <div className="mt-auto pt-4 border-t border-cornflower-200/30 dark:border-cornflower-500/10 flex items-center justify-end">
-                                <Button
-                                  onClick={() => toggleAdminMutation.mutate(user.id)}
-                                  disabled={toggleAdminMutation.isPending}
-                                  className={
-                                    user.is_admin
-                                      ? "bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500 hover:text-white rounded-full font-black text-xs px-6 transition-all duration-300"
-                                      : "admin-grant-action rounded-full font-black text-xs px-6 transition-all duration-300 shadow-sm hover:shadow-md"
-                                  }
-                                >
-                                  {user.is_admin ? "🔒 Remove Master" : "👑 Grant Mastery"}
-                                </Button>
+                              <div className="mt-auto pt-4 border-t border-cornflower-200/30 dark:border-cornflower-500/10 flex items-center justify-between gap-2 flex-wrap">
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      disabled={assignRoleMutation.isPending || user.id === currentUser?.id}
+                                      className="rounded-full text-xs font-bold border-cornflower-200/60 dark:border-cornflower-500/20 bg-white/50 dark:bg-black/30 hover:bg-cornflower-500/10 text-cornflower-900 dark:text-cornflower-100 flex items-center gap-1.5"
+                                    >
+                                      Role: {user.is_admin ? "👑 Admin" : (user.role === 'writer' || user.is_writer) ? "✍️ Writer" : "👤 Member"}
+                                      <ChevronDown className="w-3.5 h-3.5 opacity-60" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="start" className="w-48 rounded-2xl p-1.5 border border-cornflower-200/50 dark:border-cornflower-500/20 backdrop-blur-xl bg-white/95 dark:bg-black/90">
+                                    <DropdownMenuItem
+                                      disabled={user.is_admin}
+                                      onClick={() => assignRoleMutation.mutate({ userId: user.id, role: 'admin' })}
+                                      className="rounded-xl cursor-pointer text-xs font-bold py-2 flex items-center gap-2 text-cornflower-900 dark:text-cornflower-100 hover:bg-cornflower-500/10"
+                                    >
+                                      👑 Grand Master (Admin)
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      disabled={user.role === 'writer' && !user.is_admin}
+                                      onClick={() => assignRoleMutation.mutate({ userId: user.id, role: 'writer' })}
+                                      className="rounded-xl cursor-pointer text-xs font-bold py-2 flex items-center gap-2 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
+                                    >
+                                      ✍️ Writer
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      disabled={!user.is_admin && user.role !== 'writer' && !user.is_writer}
+                                      onClick={() => assignRoleMutation.mutate({ userId: user.id, role: 'user' })}
+                                      className="rounded-xl cursor-pointer text-xs font-bold py-2 flex items-center gap-2 text-cornflower-700/80 dark:text-cornflower-300/80 hover:bg-cornflower-500/10"
+                                    >
+                                      👤 Apprentice (Member)
+                                    </DropdownMenuItem>
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+
+                                {!user.is_admin && (
+                                  (user.role === 'writer' || user.is_writer) ? (
+                                    <Button
+                                      size="sm"
+                                      variant="ghost"
+                                      onClick={() => assignRoleMutation.mutate({ userId: user.id, role: 'user' })}
+                                      disabled={assignRoleMutation.isPending}
+                                      className="rounded-full text-xs font-black text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 px-4"
+                                    >
+                                      Revoke Writer
+                                    </Button>
+                                  ) : (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => assignRoleMutation.mutate({ userId: user.id, role: 'writer' })}
+                                      disabled={assignRoleMutation.isPending}
+                                      className="rounded-full text-xs font-black bg-gradient-to-r from-emerald-500 to-teal-600 text-white hover:from-emerald-600 hover:to-teal-700 shadow-sm hover:shadow-md px-4 transition-all"
+                                    >
+                                      ✍️ Assign Writer
+                                    </Button>
+                                  )
+                                )}
                               </div>
                             </div>
                           ))

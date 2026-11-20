@@ -28,6 +28,8 @@ import {
   Sparkles,
   Zap,
   ArrowRight,
+  PenTool,
+  Bookmark,
 } from 'lucide-react';
 import {
   Dialog,
@@ -630,75 +632,111 @@ export default function BlogHome() {
             </div>
 
             {/* Desktop Auth — logged in */}
-            {!isMobile && currentUser ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="flex items-center gap-2.5 px-2 py-1.5 h-10 rounded-full border border-white/10 bg-background/50 backdrop-blur-md shadow-sm hover:shadow-md hover:bg-white/5 transition-all duration-300"
-                  >
-                    <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-inner">
-                      <User className="w-4 h-4 text-white" />
-                    </div>
-                    <span className="text-sm font-semibold tracking-wide text-foreground pr-1">
-                      {currentUser.username || currentUser.name}
-                    </span>
-                    <div className="flex items-center justify-center w-5 h-5 rounded-full bg-white/5 border border-white/10">
-                      <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                    </div>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-2">
-                  <DropdownMenuItem
-                    onClick={() => setLocation('/profile')}
-                    className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary mr-3 shadow-inner">
-                      <Settings className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium">Profile Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-                    className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 dark:bg-blue-500/10 dark:text-blue-400 mr-3 shadow-inner">
-                      {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-                    </div>
-                    <span className="font-medium">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator className="bg-white/10 my-2" />
-                  <DropdownMenuItem
-                    onClick={handleLogout}
-                    className="cursor-pointer rounded-xl hover:bg-destructive/10 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors p-2"
-                  >
-                    <div className="flex items-center justify-center w-8 h-8 rounded-full bg-destructive/10 mr-3 shadow-inner">
-                      <LogOut className="w-4 h-4" />
-                    </div>
-                    <span className="font-medium">Sign Out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-            ) : !isMobile && (
+            {!isMobile && (
               <div className="flex items-center gap-3">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLocation('/login')}
-                  className="gap-2 px-4 py-2 h-9 rounded-full border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 font-semibold text-gray-800 dark:text-gray-200"
-                >
-                  <LogIn className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                  Login
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => setLocation('/register')}
-                  className="gap-2 px-5 py-2 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 border-0 font-semibold"
-                >
-                  <UserPlus className="w-4 h-4" />
-                  Sign Up
-                </Button>
+                {currentUser && (currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
+                  <Button
+                    size="sm"
+                    onClick={() => setLocation('/admin/blogs/new')}
+                    className="gap-2 px-3.5 py-1.5 h-9 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md font-semibold text-xs transition-all"
+                  >
+                    <PenTool className="w-3.5 h-3.5" />
+                    Write Article
+                  </Button>
+                )}
+                {currentUser ? (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="flex items-center gap-2.5 px-2 py-1.5 h-10 rounded-full border border-white/10 bg-background/50 backdrop-blur-md shadow-sm hover:shadow-md hover:bg-white/5 transition-all duration-300"
+                      >
+                        <div className="flex items-center justify-center w-7 h-7 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 shadow-inner">
+                          <User className="w-4 h-4 text-white" />
+                        </div>
+                        <span className="text-sm font-semibold tracking-wide text-foreground pr-1">
+                          {currentUser.username || currentUser.name}
+                        </span>
+                        <div className="flex items-center justify-center w-5 h-5 rounded-full bg-white/5 border border-white/10">
+                          <ChevronDown className="w-3 h-3 text-muted-foreground" />
+                        </div>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" sideOffset={8} className="w-56 bg-background/80 backdrop-blur-xl border border-white/10 shadow-2xl rounded-2xl p-2">
+                      <DropdownMenuItem
+                        onClick={() => setLocation('/profile')}
+                        className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary mr-3 shadow-inner">
+                          <Settings className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">Profile Settings</span>
+                      </DropdownMenuItem>
+
+                      {(currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
+                        <DropdownMenuItem
+                          onClick={() => setLocation('/admin/blogs/new')}
+                          className="cursor-pointer rounded-xl hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors p-2 font-medium"
+                        >
+                          <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 mr-3 shadow-inner">
+                            <PenTool className="w-4 h-4" />
+                          </div>
+                          <span>Write Article</span>
+                        </DropdownMenuItem>
+                      )}
+
+                      <DropdownMenuItem
+                        onClick={() => setLocation('/profile?tab=bookmarks')}
+                        className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-cyan-500/10 text-cyan-400 mr-3 shadow-inner">
+                          <Bookmark className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">Read Later</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                        className="cursor-pointer rounded-xl hover:bg-white/5 transition-colors p-2 focus:bg-primary/10"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-500/10 text-amber-500 dark:bg-blue-500/10 dark:text-blue-400 mr-3 shadow-inner">
+                          {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                        </div>
+                        <span className="font-medium">{theme === 'dark' ? 'Light Mode' : 'Dark Mode'}</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator className="bg-white/10 my-2" />
+                      <DropdownMenuItem
+                        onClick={handleLogout}
+                        className="cursor-pointer rounded-xl hover:bg-destructive/10 text-destructive focus:text-destructive focus:bg-destructive/10 transition-colors p-2"
+                      >
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-destructive/10 mr-3 shadow-inner">
+                          <LogOut className="w-4 h-4" />
+                        </div>
+                        <span className="font-medium">Sign Out</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setLocation('/login')}
+                      className="gap-2 px-4 py-2 h-9 rounded-full border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 backdrop-blur-md shadow-sm hover:shadow-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 font-semibold text-gray-800 dark:text-gray-200"
+                    >
+                      <LogIn className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                      Login
+                    </Button>
+                    <Button
+                      size="sm"
+                      onClick={() => setLocation('/register')}
+                      className="gap-2 px-5 py-2 h-9 rounded-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 text-white shadow-md hover:shadow-lg transition-all duration-300 border-0 font-semibold"
+                    >
+                      <UserPlus className="w-4 h-4" />
+                      Sign Up
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
 
@@ -749,12 +787,36 @@ export default function BlogHome() {
                   <DropdownMenuSeparator />
                   {currentUser ? (
                     <>
-                      <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border">
-                        Logged in as <span className="font-medium text-foreground">{currentUser.username}</span>
+                      <div className="px-3 py-2 text-sm text-muted-foreground border-b border-border flex items-center justify-between">
+                        <div>
+                          Logged in as <span className="font-medium text-foreground">{currentUser.username}</span>
+                        </div>
+                        {currentUser.is_admin ? (
+                          <span className="text-xs px-2 py-0.5 ml-2 rounded bg-primary/10 text-primary font-bold">
+                            Admin
+                          </span>
+                        ) : (currentUser.role === 'writer' || currentUser.is_writer) ? (
+                          <span className="text-xs px-2 py-0.5 ml-2 rounded bg-emerald-500/20 text-emerald-400 font-bold">
+                            Writer
+                          </span>
+                        ) : null}
                       </div>
+                      {(currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
+                        <DropdownMenuItem
+                          onClick={() => setLocation('/admin/blogs/new')}
+                          className="cursor-pointer hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
+                        >
+                          <PenTool className="w-4 h-4 mr-2" />
+                          Write Article
+                        </DropdownMenuItem>
+                      )}
                       <DropdownMenuItem onClick={() => setLocation('/profile')} className="cursor-pointer hover:bg-accent">
                         <Settings className="w-4 h-4 mr-2" />
                         Profile Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setLocation('/profile?tab=bookmarks')} className="cursor-pointer hover:bg-accent">
+                        <Bookmark className="w-4 h-4 mr-2 text-cyan-400" />
+                        Read Later
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-destructive hover:bg-destructive/10 focus:text-destructive">
                         <LogOut className="w-4 h-4 mr-2" />

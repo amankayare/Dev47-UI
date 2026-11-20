@@ -19,6 +19,8 @@ interface User {
   username: string;
   email: string;
   is_admin: boolean;
+  role?: string;
+  is_writer?: boolean;
   created_at: string;
 }
 
@@ -26,9 +28,10 @@ interface AdminLayoutProps {
   children: React.ReactNode;
   title: string;
   backTo?: string;
+  allowWriter?: boolean;
 }
 
-export default function AdminLayout({ children, title, backTo = '/admin#content' }: AdminLayoutProps) {
+export default function AdminLayout({ children, title, backTo = '/admin#content', allowWriter = false }: AdminLayoutProps) {
   return (
     <div className="admin-theme-wrapper">
       <ThemeProvider 
@@ -36,13 +39,13 @@ export default function AdminLayout({ children, title, backTo = '/admin#content'
         defaultTheme="dark"
         scoped={true}
       >
-        <AdminLayoutContent children={children} title={title} backTo={backTo} />
+        <AdminLayoutContent children={children} title={title} backTo={backTo} allowWriter={allowWriter} />
       </ThemeProvider>
     </div>
   );
 }
 
-function AdminLayoutContent({ children, title, backTo }: AdminLayoutProps) {
+function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayoutProps) {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
@@ -50,7 +53,7 @@ function AdminLayoutContent({ children, title, backTo }: AdminLayoutProps) {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in and is admin
+    // Check if user is logged in and is admin or writer
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
     
@@ -60,18 +63,33 @@ function AdminLayoutContent({ children, title, backTo }: AdminLayoutProps) {
     }
 
     const userData = JSON.parse(user);
-    if (!userData.is_admin) {
-      toast({
-        title: 'Access Denied',
-        description: 'You need admin access to view this page.',
-        variant: 'destructive',
-      });
-      setLocation('/');
-      return;
+    const isAdmin = Boolean(userData.is_admin || userData.role === 'admin');
+    const isWriter = Boolean(userData.role === 'writer' || userData.is_writer || isAdmin);
+
+    if (allowWriter) {
+      if (!isWriter) {
+        toast({
+          title: 'Access Denied',
+          description: 'You need writer or admin access to view this page.',
+          variant: 'destructive',
+        });
+        setLocation('/');
+        return;
+      }
+    } else {
+      if (!isAdmin) {
+        toast({
+          title: 'Access Denied',
+          description: 'You need admin access to view this page.',
+          variant: 'destructive',
+        });
+        setLocation('/');
+        return;
+      }
     }
 
     setCurrentUser(userData);
-  }, [setLocation, toast]);
+  }, [setLocation, toast, allowWriter]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -81,6 +99,9 @@ function AdminLayoutContent({ children, title, backTo }: AdminLayoutProps) {
 
   if (!currentUser) return null;
 
+  const isAdmin = Boolean(currentUser.is_admin || currentUser.role === 'admin');
+  const effectiveBackTo = (!isAdmin && backTo === '/admin#content') ? '/blogs' : (backTo || '/blogs');
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-secondary transition-colors duration-700 admin-theme-scope">
       <header className="sticky top-0 z-40 w-full bg-white/40 dark:bg-black/20 backdrop-blur-2xl border-b border-white/30 dark:border-white/5">
@@ -89,7 +110,7 @@ function AdminLayoutContent({ children, title, backTo }: AdminLayoutProps) {
           <div className="flex flex-col space-y-3 sm:hidden">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                <Link href={backTo}>
+                <Link href={effectiveBackTo}>
                   <Button variant="ghost" size="sm" className="h-8 px-2 text-cornflower-800 dark:text-cornflower-200 hover:bg-white/40 dark:hover:bg-white/5 rounded-full">
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     Back
@@ -159,7 +180,7 @@ function AdminLayoutContent({ children, title, backTo }: AdminLayoutProps) {
           {/* Desktop Header - Single row */}
           <div className="hidden sm:flex h-12 items-center justify-between">
             <div className="flex items-center space-x-4">
-              <Link href={backTo}>
+              <Link href={effectiveBackTo}>
                 <Button variant="ghost" size="sm" className="text-cornflower-800 dark:text-cornflower-200 hover:bg-white/40 dark:hover:bg-white/5 rounded-full px-4">
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   Back

@@ -78,6 +78,21 @@ export default function BlogEditor() {
   const { isConverting, error: aiError, convert, reset: resetAI } = useAIConvert();
 
   const [stagingId, setStagingId] = useState<string | null>(null);
+
+  // Auto-fill author name for new blog posts if blank
+  useEffect(() => {
+    if (!isEditing) {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const u = JSON.parse(userStr);
+          if (u?.username) {
+            setFormData(prev => prev.author_name ? prev : ({ ...prev, author_name: u.username }));
+          }
+        }
+      } catch {}
+    }
+  }, [isEditing]);
   const [selectedProvider, setSelectedProvider] = useState('github');
   const [showPromoteConfirm, setShowPromoteConfirm] = useState(false);
 
@@ -138,8 +153,19 @@ export default function BlogEditor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/blogs'] });
       toast({ title: 'Success', description: 'Blog created successfully.' });
-      setLocation('/admin/blogs');
+      try {
+        const userStr = localStorage.getItem('user');
+        const u = userStr ? JSON.parse(userStr) : null;
+        if (u?.is_admin) {
+          setLocation('/admin/blogs');
+        } else {
+          setLocation('/blogs');
+        }
+      } catch {
+        setLocation('/blogs');
+      }
     },
   });
 
@@ -157,8 +183,19 @@ export default function BlogEditor() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/blogs'] });
       toast({ title: 'Success', description: 'Blog updated successfully.' });
-      setLocation('/admin/blogs');
+      try {
+        const userStr = localStorage.getItem('user');
+        const u = userStr ? JSON.parse(userStr) : null;
+        if (u?.is_admin) {
+          setLocation('/admin/blogs');
+        } else {
+          setLocation('/blogs');
+        }
+      } catch {
+        setLocation('/blogs');
+      }
     },
   });
 
@@ -261,7 +298,7 @@ export default function BlogEditor() {
 
   if (isEditing && isLoadingBlog) {
     return (
-      <AdminLayout title="Edit Blog Post">
+      <AdminLayout title="Edit Blog Post" allowWriter={true}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-12 h-12 border-4 border-cornflower-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
@@ -273,6 +310,7 @@ export default function BlogEditor() {
     <AdminLayout 
       title={isEditing ? "Edit Blog Post" : "Create New Blog Post"} 
       backTo="/admin/blogs"
+      allowWriter={true}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 flex items-center justify-between">
