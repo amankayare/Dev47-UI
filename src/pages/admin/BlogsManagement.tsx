@@ -36,6 +36,16 @@ export default function BlogsManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+
+  const [currentUser] = useState<any>(() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
+  });
+  const isAdmin = Boolean(currentUser?.is_admin || currentUser?.role === 'admin');
   
   // Pagination and search state
   const [page, setPage] = useState(1);
@@ -245,7 +255,11 @@ export default function BlogsManagement() {
     });
 
   return (
-    <AdminLayout title="Manage Blog Posts">
+    <AdminLayout 
+      title={isAdmin ? "Manage Blog Posts" : "My Articles"} 
+      backTo={isAdmin ? "/admin#content" : "/blogs"}
+      allowWriter={true}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-10">
           {/* Enhanced Header Section - Cyberpunk cornflower */}
@@ -264,47 +278,51 @@ export default function BlogsManagement() {
                       </svg>
                     </div>
                     <h1 className="text-3xl font-black tracking-tight text-cornflower-900 dark:text-cornflower-50 drop-shadow-[0_0_10px_rgba(100, 149, 237,0.3)]">
-                      Blog Management
+                      {isAdmin ? "Blog Management" : "My Articles"}
                     </h1>
                   </div>
                   <p className="text-cornflower-700/70 dark:text-cornflower-300/70 text-sm max-w-2xl leading-relaxed font-medium">
-                    Manage your transmissions to the digital frontier.
+                    {isAdmin
+                      ? "Manage transmissions across all writers on Dev47."
+                      : "Manage your personal transmissions to the digital frontier."}
                   </p>
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-4">
-                  {/* Quick Newsletter Banner Visibility Toggle */}
-                  <div className="flex items-center gap-3 bg-white/70 dark:bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-cornflower-200/50 dark:border-cornflower-500/20 shadow-sm">
-                    <Mail className="w-4 h-4 text-cyan-500" />
-                    <span className="text-xs font-bold text-cornflower-900 dark:text-cornflower-100 whitespace-nowrap">
-                      Newsletter Banner:
-                    </span>
-                    <Badge
-                      variant="secondary"
-                      className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 ${
-                        bannerSettings?.is_visible ?? true
-                          ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
-                          : "bg-muted text-muted-foreground border border-border"
-                      }`}
-                    >
-                      {bannerSettings?.is_visible ?? true ? "Visible" : "Hidden"}
-                    </Badge>
-                    <Switch
-                      checked={bannerSettings?.is_visible ?? true}
-                      disabled={toggleBannerMutation.isPending}
-                      onCheckedChange={(checked) => toggleBannerMutation.mutate(checked)}
-                      aria-label="Toggle newsletter banner visibility"
-                    />
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setBannerModalOpen(true)}
-                      className="h-7 px-2.5 text-xs font-bold text-cornflower-700 dark:text-cornflower-300 hover:bg-cornflower-500/10 rounded-full"
-                      title="Edit banner content"
-                    >
-                      <Edit className="w-3.5 h-3.5 mr-1" /> Edit
-                    </Button>
-                  </div>
+                  {/* Quick Newsletter Banner Visibility Toggle - Admin Only */}
+                  {isAdmin && (
+                    <div className="flex items-center gap-3 bg-white/70 dark:bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-cornflower-200/50 dark:border-cornflower-500/20 shadow-sm">
+                      <Mail className="w-4 h-4 text-cyan-500" />
+                      <span className="text-xs font-bold text-cornflower-900 dark:text-cornflower-100 whitespace-nowrap">
+                        Newsletter Banner:
+                      </span>
+                      <Badge
+                        variant="secondary"
+                        className={`text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 ${
+                          bannerSettings?.is_visible ?? true
+                            ? "bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20"
+                            : "bg-muted text-muted-foreground border border-border"
+                        }`}
+                      >
+                        {bannerSettings?.is_visible ?? true ? "Visible" : "Hidden"}
+                      </Badge>
+                      <Switch
+                        checked={bannerSettings?.is_visible ?? true}
+                        disabled={toggleBannerMutation.isPending}
+                        onCheckedChange={(checked) => toggleBannerMutation.mutate(checked)}
+                        aria-label="Toggle newsletter banner visibility"
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setBannerModalOpen(true)}
+                        className="h-7 px-2.5 text-xs font-bold text-cornflower-700 dark:text-cornflower-300 hover:bg-cornflower-500/10 rounded-full"
+                        title="Edit banner content"
+                      >
+                        <Edit className="w-3.5 h-3.5 mr-1" /> Edit
+                      </Button>
+                    </div>
+                  )}
 
                   <Button 
                     className="bg-cornflower-600 hover:bg-cornflower-700 dark:bg-cornflower-500 dark:hover:bg-cornflower-600 text-white shadow-xl shadow-cornflower-500/20 transition-all duration-300 px-8 py-6 font-black uppercase tracking-widest rounded-full border-0 transform hover:scale-105 active:scale-95" 
@@ -572,7 +590,7 @@ export default function BlogsManagement() {
                     <CardTitle className="text-xl font-black text-cornflower-950 dark:text-cornflower-50 line-clamp-2 group-hover:text-cornflower-600 dark:group-hover:text-cornflower-400 transition-colors leading-tight tracking-tight uppercase">
                       {blog.title}
                     </CardTitle>
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-4 flex-wrap text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
@@ -590,6 +608,11 @@ export default function BlogsManagement() {
                           </svg>
                           {blog.reading_time} min read
                         </div>
+                      )}
+                      {isAdmin && blog.author && (
+                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-cornflower-500/10 text-cornflower-600 dark:text-cornflower-300 border border-cornflower-500/20">
+                          ✍️ {blog.author.name}
+                        </span>
                       )}
                     </div>
                   </div>

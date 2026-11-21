@@ -536,14 +536,24 @@ export default function UserProfile() {
                 <p className="text-xs text-muted-foreground">
                   You are authorized to publish and compose articles on Dev47.
                 </p>
-                <Button
-                  size="sm"
-                  onClick={() => setLocation('/admin/blogs/new')}
-                  className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md mt-1 flex items-center justify-center gap-2"
-                >
-                  <PenTool className="w-3.5 h-3.5" />
-                  Write New Article
-                </Button>
+                <div className="grid grid-cols-2 gap-2 pt-1">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setLocation('/admin/blogs')}
+                    className="rounded-xl border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs"
+                  >
+                    My Articles
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setLocation('/admin/blogs/new')}
+                    className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-1.5"
+                  >
+                    <PenTool className="w-3.5 h-3.5" />
+                    New Post
+                  </Button>
+                </div>
               </div>
             )}
 
