@@ -105,6 +105,7 @@ export default function WriterBlogEditor() {
   const [newLinkTitle, setNewLinkTitle] = useState('');
   const [newLinkUrl, setNewLinkUrl] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSourceMode, setIsSourceMode] = useState(false);
 
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -150,7 +151,15 @@ export default function WriterBlogEditor() {
 
       setTitle(blog.title || '');
       setExcerpt(blog.excerpt || '');
-      const rawContent = blog.content || '<p></p>';
+      let rawContent = blog.content || '<p></p>';
+      if (/&lt;(?:h[1-6]|p|div|ul|ol|li|table|blockquote|pre|figure|section|span|strong|em|hr|code|a|del)[\s&gt;]/i.test(rawContent)) {
+        rawContent = rawContent
+          .replace(/&lt;/g, '<')
+          .replace(/&gt;/g, '>')
+          .replace(/&quot;/g, '"')
+          .replace(/&#39;/g, "'")
+          .replace(/&amp;/g, '&');
+      }
       setContentHtml(rawContent);
       if (editorRef.current) {
         editorRef.current.innerHTML = rawContent;
@@ -183,6 +192,21 @@ export default function WriterBlogEditor() {
     const chars = text.length;
     const estimatedMinutes = Math.max(1, Math.ceil(words / 200));
     return { words, chars, estimatedMinutes };
+  }, [contentHtml]);
+
+  // Normalized content for preview (auto-decodes escaped HTML if needed)
+  const normalizedContent = useMemo(() => {
+    if (!contentHtml) return '';
+    let content = contentHtml;
+    if (/&lt;(?:h[1-6]|p|div|ul|ol|li|table|blockquote|pre|figure|section|span|strong|em|hr|code|a|del)[\s&gt;]/i.test(content)) {
+      content = content
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&');
+    }
+    return content;
   }, [contentHtml]);
 
   // Handle rich text input changes
@@ -294,6 +318,20 @@ export default function WriterBlogEditor() {
     }
   };
 
+  // Smart paste: if pasting raw HTML markup, insert as real HTML elements
+  const handlePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const textData = e.clipboardData.getData('text/plain');
+
+    if (/<(?:h[1-6]|p|div|ul|ol|li|table|blockquote|pre|figure|section|header|hr|code|a|strong|em)[\s>]/i.test(textData)) {
+      e.preventDefault();
+      document.execCommand('insertHTML', false, textData);
+      if (editorRef.current) {
+        setContentHtml(editorRef.current.innerHTML);
+      }
+      return;
+    }
+  };
+
   // Tag management
   const handleAddTag = (rawTag: string) => {
     const clean = rawTag.trim().replace(/^#/, '');
@@ -394,10 +432,21 @@ export default function WriterBlogEditor() {
 
     const readingTimeValue = manualReadingTime ? parseInt(manualReadingTime, 10) : stats.estimatedMinutes;
 
+    let finalContent = contentHtml;
+    // Auto-decode if the content was somehow saved with escaped HTML tags
+    if (/&lt;(?:h[1-6]|p|div|ul|ol|li|table|blockquote|pre|figure|section|span|strong|em|hr|code|a|del)[\s&gt;]/i.test(finalContent)) {
+      finalContent = finalContent
+        .replace(/&lt;/g, '<')
+        .replace(/&gt;/g, '>')
+        .replace(/&quot;/g, '"')
+        .replace(/&#39;/g, "'")
+        .replace(/&amp;/g, '&');
+    }
+
     const payload = {
       title: title.trim(),
       excerpt: excerpt.trim() || title.trim().slice(0, 160),
-      content: contentHtml,
+      content: finalContent,
       cover_image: coverImage || '',
       category_id: Number(categoryId),
       tags: tags,
@@ -565,7 +614,7 @@ export default function WriterBlogEditor() {
 
                 {/* Preview Body Content */}
                 <div className={blogStyles.prose}>
-                  <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+                  <div dangerouslySetInnerHTML={{ __html: normalizedContent }} />
                 </div>
 
                 {/* Preview Tags */}
@@ -865,18 +914,51 @@ export default function WriterBlogEditor() {
                       >
                         <Eraser className="w-4 h-4" />
                       </Button>
+                      <div className="h-4 w-px bg-border/60 mx-1" />
+                      <Button
+                        type="button"
+                        variant={isSourceMode ? "secondary" : "ghost"}
+                        size="sm"
+                        onClick={() => {
+                          if (isSourceMode) {
+                            if (editorRef.current) {
+                              editorRef.current.innerHTML = contentHtml;
+                            }
+                          }
+                          setIsSourceMode(!isSourceMode);
+                        }}
+                        className={`h-8 px-2.5 gap-1.5 text-xs font-mono rounded-lg transition-colors ${
+                          isSourceMode
+                            ? 'bg-cornflower-500/20 text-cornflower-400 border border-cornflower-500/30'
+                            : 'hover:bg-background text-cornflower-500'
+                        }`}
+                        title="Toggle HTML Source Code"
+                      >
+                        <Code className="w-4 h-4" />
+                        <span>{isSourceMode ? 'Visual Mode' : 'HTML Code'}</span>
+                      </Button>
                     </div>
                   </div>
 
-                  {/* Visual ContentEditable Canvas */}
-                  <div
-                    ref={editorRef}
-                    contentEditable
-                    onInput={handleEditorInput}
-                    onKeyDown={handleKeyDown}
-                    className="p-6 sm:p-10 min-h-[520px] focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-cornflower-500 prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4"
-                    suppressContentEditableWarning={true}
-                  />
+                  {/* Visual ContentEditable Canvas or HTML Source Mode */}
+                  {isSourceMode ? (
+                    <Textarea
+                      value={contentHtml}
+                      onChange={(e) => setContentHtml(e.target.value)}
+                      className="p-6 sm:p-8 min-h-[520px] font-mono text-sm leading-relaxed border-none focus-visible:ring-0 bg-slate-950 text-slate-100 resize-y rounded-none"
+                      placeholder="<p>Write or paste your raw HTML code here...</p>"
+                    />
+                  ) : (
+                    <div
+                      ref={editorRef}
+                      contentEditable
+                      onInput={handleEditorInput}
+                      onKeyDown={handleKeyDown}
+                      onPaste={handlePaste}
+                      className="p-6 sm:p-10 min-h-[520px] focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-cornflower-500 prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4"
+                      suppressContentEditableWarning={true}
+                    />
+                  )}
 
                   {/* Footer Word Count Bar */}
                   <div className="px-6 py-3 bg-muted/20 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground font-mono">
@@ -917,7 +999,7 @@ export default function WriterBlogEditor() {
               </div>
 
               <div className={blogStyles.prose}>
-                <div dangerouslySetInnerHTML={{ __html: contentHtml }} />
+                <div dangerouslySetInnerHTML={{ __html: normalizedContent }} />
               </div>
             </div>
           )}
