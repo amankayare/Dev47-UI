@@ -605,20 +605,42 @@ export default function WriterBlogEditor() {
             ) : (
               /* Writing Canvas */
               <div className="space-y-4">
-                {/* Title Input Card */}
-                <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-4">
-                  <Input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    placeholder="Article Title..."
-                    className="text-2xl sm:text-3xl font-black border-none shadow-none focus-visible:ring-0 p-0 h-auto placeholder:text-muted-foreground/30 bg-transparent tracking-tight"
-                  />
-                  <Textarea
-                    value={excerpt}
-                    onChange={(e) => setExcerpt(e.target.value)}
-                    placeholder="Write a captivating summary or excerpt for your article (1-2 sentences)..."
-                    className="text-sm text-muted-foreground border-none shadow-none focus-visible:ring-0 p-0 resize-none min-h-[50px] bg-transparent leading-relaxed"
-                  />
+                {/* Title & Summary Input Card */}
+                <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+                  {/* Article Title */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="article-title" className="text-sm font-extrabold uppercase tracking-wider text-cornflower-950 dark:text-cornflower-100 flex items-center gap-2">
+                        <PenTool className="w-4 h-4 text-cornflower-500" />
+                        Article Title <span className="text-red-500">*</span>
+                      </Label>
+                      <span className="text-xs text-muted-foreground font-mono">{title.length} characters</span>
+                    </div>
+                    <Input
+                      id="article-title"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Enter a captivating article title..."
+                      className="h-14 px-4 text-xl sm:text-2xl font-bold rounded-2xl border-2 border-border/70 focus-visible:border-cornflower-500 focus-visible:ring-2 focus-visible:ring-cornflower-500/20 bg-background/50 placeholder:text-muted-foreground/40 transition-all text-foreground"
+                    />
+                  </div>
+
+                  {/* Article Summary / Excerpt */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor="article-summary" className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                        Article Summary / Excerpt (Optional)
+                      </Label>
+                      <span className="text-xs text-muted-foreground font-mono">{excerpt.length} characters</span>
+                    </div>
+                    <Textarea
+                      id="article-summary"
+                      value={excerpt}
+                      onChange={(e) => setExcerpt(e.target.value)}
+                      placeholder="Write a brief summary (1-2 sentences) to appear on article cards and search results..."
+                      className="text-sm rounded-xl border border-border/60 bg-background/40 resize-none min-h-[72px] leading-relaxed p-3 focus-visible:border-cornflower-500 text-foreground"
+                    />
+                  </div>
                 </div>
 
                 {/* Traditional Rich Writing Canvas Card */}
