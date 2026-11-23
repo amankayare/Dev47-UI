@@ -19,6 +19,7 @@ const AboutManagement = lazy(() => import("./pages/admin/AboutManagement"));
 const ExperienceManagement = lazy(() => import("./pages/admin/ExperienceManagement"));
 const TechnicalSkillsManagement = lazy(() => import("./pages/admin/TechnicalSkillsManagement"));
 const BlogEditor = lazy(() => import("./pages/admin/BlogEditor"));
+const WriterBlogEditor = lazy(() => import("./pages/writer/WriterBlogEditor"));
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -49,8 +50,8 @@ function App() {
               <Route path="/reset-password/:token" component={ResetPassword} />
               <Route path="/profile" component={UserProfile} />
               <Route path="/writer/blogs">{() => <DelayedContent><BlogsManagement isWriterMode={true} /></DelayedContent>}</Route>
-              <Route path="/writer/blogs/new">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
-              <Route path="/writer/blogs/edit/:id">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
+              <Route path="/writer/blogs/new">{() => <DelayedContent><WriterBlogEditor /></DelayedContent>}</Route>
+              <Route path="/writer/blogs/edit/:id">{() => <DelayedContent><WriterBlogEditor /></DelayedContent>}</Route>
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/projects">{() => <DelayedContent><ProjectsManagement /></DelayedContent>}</Route>
               <Route path="/admin/blogs">
@@ -63,8 +64,26 @@ function App() {
                   return <DelayedContent><BlogsManagement isWriterMode={!isPureAdmin} /></DelayedContent>;
                 }}
               </Route>
-              <Route path="/admin/blogs/new">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
-              <Route path="/admin/blogs/edit/:id">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
+              <Route path="/admin/blogs/new">
+                {() => {
+                  let isPureAdmin = false;
+                  try {
+                    const u = JSON.parse(localStorage.getItem('user') || '{}');
+                    isPureAdmin = Boolean(u.is_admin || u.role === 'admin');
+                  } catch {}
+                  return <DelayedContent>{isPureAdmin ? <BlogEditor isWriterMode={false} /> : <WriterBlogEditor />}</DelayedContent>;
+                }}
+              </Route>
+              <Route path="/admin/blogs/edit/:id">
+                {() => {
+                  let isPureAdmin = false;
+                  try {
+                    const u = JSON.parse(localStorage.getItem('user') || '{}');
+                    isPureAdmin = Boolean(u.is_admin || u.role === 'admin');
+                  } catch {}
+                  return <DelayedContent>{isPureAdmin ? <BlogEditor isWriterMode={false} /> : <WriterBlogEditor />}</DelayedContent>;
+                }}
+              </Route>
               <Route path="/admin/certifications">{() => <DelayedContent><CertificationsManagement /></DelayedContent>}</Route>
               <Route path="/admin/about">{() => <DelayedContent><AboutManagement /></DelayedContent>}</Route>
               <Route path="/admin/experience">{() => <DelayedContent><ExperienceManagement /></DelayedContent>}</Route>
