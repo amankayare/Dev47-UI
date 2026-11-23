@@ -53,9 +53,18 @@ function App() {
               <Route path="/writer/blogs/edit/:id">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/projects">{() => <DelayedContent><ProjectsManagement /></DelayedContent>}</Route>
-              <Route path="/admin/blogs">{() => <DelayedContent><BlogsManagement /></DelayedContent>}</Route>
-              <Route path="/admin/blogs/new">{() => <DelayedContent><BlogEditor /></DelayedContent>}</Route>
-              <Route path="/admin/blogs/edit/:id">{() => <DelayedContent><BlogEditor /></DelayedContent>}</Route>
+              <Route path="/admin/blogs">
+                {() => {
+                  let isPureAdmin = false;
+                  try {
+                    const u = JSON.parse(localStorage.getItem('user') || '{}');
+                    isPureAdmin = Boolean(u.is_admin || u.role === 'admin');
+                  } catch {}
+                  return <DelayedContent><BlogsManagement isWriterMode={!isPureAdmin} /></DelayedContent>;
+                }}
+              </Route>
+              <Route path="/admin/blogs/new">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
+              <Route path="/admin/blogs/edit/:id">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
               <Route path="/admin/certifications">{() => <DelayedContent><CertificationsManagement /></DelayedContent>}</Route>
               <Route path="/admin/about">{() => <DelayedContent><AboutManagement /></DelayedContent>}</Route>
               <Route path="/admin/experience">{() => <DelayedContent><ExperienceManagement /></DelayedContent>}</Route>

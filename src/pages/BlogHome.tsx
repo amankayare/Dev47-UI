@@ -637,7 +637,7 @@ export default function BlogHome() {
                 {currentUser && (currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
                   <Button
                     size="sm"
-                    onClick={() => setLocation(currentUser.is_admin ? '/admin/blogs/new' : '/writer/blogs/new')}
+                    onClick={() => setLocation('/writer/blogs/new')}
                     className="gap-2 px-3.5 py-1.5 h-9 rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-md font-semibold text-xs transition-all"
                   >
                     <PenTool className="w-3.5 h-3.5" />
@@ -675,7 +675,7 @@ export default function BlogHome() {
 
                       {(currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
                         <DropdownMenuItem
-                          onClick={() => setLocation(currentUser.is_admin ? '/admin/blogs/new' : '/writer/blogs/new')}
+                          onClick={() => setLocation('/writer/blogs/new')}
                           className="cursor-pointer rounded-xl hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors p-2 font-medium"
                         >
                           <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-500/10 text-emerald-500 mr-3 shadow-inner">
@@ -815,7 +815,7 @@ export default function BlogHome() {
                       </div>
                       {(currentUser.is_admin || currentUser.role === 'writer' || currentUser.is_writer) && (
                         <DropdownMenuItem
-                          onClick={() => setLocation(currentUser.is_admin ? '/admin/blogs/new' : '/writer/blogs/new')}
+                          onClick={() => setLocation('/writer/blogs/new')}
                           className="cursor-pointer hover:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-medium"
                         >
                           <PenTool className="w-4 h-4 mr-2" />

@@ -90,6 +90,20 @@ function WriterLayoutContent({ children, title, backTo = '/profile' }: WriterLay
           }
         });
 
+        if (res.status === 401) {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          if (isMounted) {
+            toast({
+              title: 'Session Expired',
+              description: 'Please sign in to access your writer studio.',
+              variant: 'destructive',
+            });
+            setLocation('/login');
+          }
+          return;
+        }
+
         if (res.ok) {
           const freshData = await res.json();
           const freshIsAdmin = Boolean(freshData.is_admin || freshData.role === 'admin');

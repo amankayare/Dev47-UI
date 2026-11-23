@@ -553,7 +553,7 @@ export default function UserProfile() {
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => setLocation(user.is_admin ? '/admin/blogs/new' : '/writer/blogs/new')}
+                    onClick={() => setLocation('/writer/blogs/new')}
                     className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-1.5"
                   >
                     <PenTool className="w-3.5 h-3.5" />

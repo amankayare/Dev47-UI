@@ -82,6 +82,12 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
           const res = await fetch(apiUrl('/api/auth/profile'), {
             headers: { Authorization: `Bearer ${token}` }
           });
+          if (res.status === 401) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setLocation('/login');
+            return;
+          }
           if (res.ok) {
             const freshData = await res.json();
             userData = freshData;
@@ -95,8 +101,8 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
 
       // If user is a writer and not admin, handle routing to dedicated writer workspace
       if (!isAdmin) {
+        const path = (window.location.pathname || '').replace(/\/+$/, '');
         if (isWriter) {
-          const path = window.location.pathname;
           if (path === '/admin/blogs') {
             setLocation('/writer/blogs');
             return;
@@ -122,10 +128,10 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
         } else {
           toast({
             title: 'Access Denied',
-            description: 'You need admin access to view this page.',
+            description: 'You need admin privileges to view this section.',
             variant: 'destructive',
           });
-          setLocation('/');
+          setLocation('/profile');
           return;
         }
       }

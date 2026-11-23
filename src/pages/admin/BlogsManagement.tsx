@@ -102,6 +102,7 @@ export default function BlogsManagement({ isWriterMode }: { isWriterMode?: boole
     image_scale?: number;
   }>({
     queryKey: ['/api/admin/settings/newsletter-banner'],
+    enabled: Boolean(isAdmin && !isWriterRoute),
     queryFn: async () => {
       try {
         return await apiGet('/api/admin/settings/newsletter-banner');
