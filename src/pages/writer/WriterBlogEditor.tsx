@@ -695,7 +695,7 @@ export default function WriterBlogEditor() {
                 {/* Traditional Rich Writing Canvas Card */}
                 <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm flex flex-col">
                   {/* Rich Formatting Toolbar */}
-                  <div className="p-2.5 bg-muted/40 border-b border-border/60 flex flex-wrap items-center gap-1 sticky top-16 z-20 backdrop-blur-md">
+                  <div className="p-3 bg-muted/80 dark:bg-muted/40 border-b border-border/70 flex flex-wrap items-center gap-1.5 relative z-10 w-full">
                     {/* Headings */}
                     <div className="flex items-center gap-0.5 pr-1 border-r border-border/60">
                       <Button
@@ -955,7 +955,7 @@ export default function WriterBlogEditor() {
                       onInput={handleEditorInput}
                       onKeyDown={handleKeyDown}
                       onPaste={handlePaste}
-                      className="p-6 sm:p-10 min-h-[520px] focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-cornflower-500 prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4"
+                      className="p-6 sm:p-10 min-h-[520px] w-full focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-cornflower-500 prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4 bg-background/20"
                       suppressContentEditableWarning={true}
                     />
                   )}
