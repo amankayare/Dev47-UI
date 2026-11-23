@@ -141,6 +141,12 @@ export default function UserProfile() {
         username: user.username,
         email: user.email,
       });
+      try {
+        localStorage.setItem('user', JSON.stringify(user));
+        if ((user as any).token) {
+          localStorage.setItem('token', (user as any).token);
+        }
+      } catch {}
     }
   }, [user]);
 
@@ -540,14 +546,14 @@ export default function UserProfile() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setLocation('/admin/blogs')}
+                    onClick={() => setLocation(user.is_admin ? '/admin/blogs' : '/writer/blogs')}
                     className="rounded-xl border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/10 font-bold text-xs"
                   >
-                    My Articles
+                    {user.is_admin ? 'All Blogs' : 'My Articles'}
                   </Button>
                   <Button
                     size="sm"
-                    onClick={() => setLocation('/admin/blogs/new')}
+                    onClick={() => setLocation(user.is_admin ? '/admin/blogs/new' : '/writer/blogs/new')}
                     className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md flex items-center justify-center gap-1.5"
                   >
                     <PenTool className="w-3.5 h-3.5" />

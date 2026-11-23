@@ -48,6 +48,9 @@ function App() {
               <Route path="/forgot-password" component={ForgotPassword} />
               <Route path="/reset-password/:token" component={ResetPassword} />
               <Route path="/profile" component={UserProfile} />
+              <Route path="/writer/blogs">{() => <DelayedContent><BlogsManagement isWriterMode={true} /></DelayedContent>}</Route>
+              <Route path="/writer/blogs/new">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
+              <Route path="/writer/blogs/edit/:id">{() => <DelayedContent><BlogEditor isWriterMode={true} /></DelayedContent>}</Route>
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/projects">{() => <DelayedContent><ProjectsManagement /></DelayedContent>}</Route>
               <Route path="/admin/blogs">{() => <DelayedContent><BlogsManagement /></DelayedContent>}</Route>

@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { Plus, Edit, Trash2, Star, Search, X, Eye, Mail } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import WriterLayout from '@/components/writer/WriterLayout';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
 import { apiGet, apiPut, apiDelete, apiAssetUrl, apiUrl } from '@/utils/api';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
@@ -32,10 +33,10 @@ interface Blog {
   quick_links?: Array<{ title: string; url: string }>;
 }
 
-export default function BlogsManagement() {
+export default function BlogsManagement({ isWriterMode }: { isWriterMode?: boolean } = {}) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
 
   const [currentUser] = useState<any>(() => {
     try {
@@ -46,6 +47,7 @@ export default function BlogsManagement() {
     }
   });
   const isAdmin = Boolean(currentUser?.is_admin || currentUser?.role === 'admin');
+  const isWriterRoute = Boolean(isWriterMode || location.startsWith('/writer') || !isAdmin);
   
   // Pagination and search state
   const [page, setPage] = useState(1);
@@ -239,7 +241,7 @@ export default function BlogsManagement() {
   });
 
   const handleEdit = (blog: Blog) => {
-    setLocation(`/admin/blogs/edit/${blog.id}`);
+    setLocation(isWriterRoute ? `/writer/blogs/edit/${blog.id}` : `/admin/blogs/edit/${blog.id}`);
   };
 
   const handleViewBlog = (blog: Blog) => {
@@ -254,12 +256,13 @@ export default function BlogsManagement() {
       return a.category.name.localeCompare(b.category.name);
     });
 
+  const Layout = isWriterRoute ? WriterLayout : AdminLayout;
+  const layoutProps = isWriterRoute
+    ? { title: "My Articles", backTo: "/profile" }
+    : { title: "Blog Management", backTo: "/admin#content", allowWriter: true };
+
   return (
-    <AdminLayout 
-      title={isAdmin ? "Manage Blog Posts" : "My Articles"} 
-      backTo={isAdmin ? "/admin#content" : "/blogs"}
-      allowWriter={true}
-    >
+    <Layout {...layoutProps}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-10">
           {/* Enhanced Header Section - Cyberpunk cornflower */}
@@ -278,19 +281,19 @@ export default function BlogsManagement() {
                       </svg>
                     </div>
                     <h1 className="text-3xl font-black tracking-tight text-cornflower-900 dark:text-cornflower-50 drop-shadow-[0_0_10px_rgba(100, 149, 237,0.3)]">
-                      {isAdmin ? "Blog Management" : "My Articles"}
+                      {isWriterRoute ? "My Articles" : "Blog Management"}
                     </h1>
                   </div>
                   <p className="text-cornflower-700/70 dark:text-cornflower-300/70 text-sm max-w-2xl leading-relaxed font-medium">
-                    {isAdmin
-                      ? "Manage transmissions across all writers on Dev47."
-                      : "Manage your personal transmissions to the digital frontier."}
+                    {isWriterRoute
+                      ? "Manage your personal transmissions to the digital frontier."
+                      : "Manage transmissions across all writers on Dev47."}
                   </p>
                 </div>
                 
                 <div className="flex flex-wrap items-center gap-4">
                   {/* Quick Newsletter Banner Visibility Toggle - Admin Only */}
-                  {isAdmin && (
+                  {isAdmin && !isWriterRoute && (
                     <div className="flex items-center gap-3 bg-white/70 dark:bg-black/40 backdrop-blur-md px-4 py-2.5 rounded-full border border-cornflower-200/50 dark:border-cornflower-500/20 shadow-sm">
                       <Mail className="w-4 h-4 text-cyan-500" />
                       <span className="text-xs font-bold text-cornflower-900 dark:text-cornflower-100 whitespace-nowrap">
@@ -326,7 +329,7 @@ export default function BlogsManagement() {
 
                   <Button 
                     className="bg-cornflower-600 hover:bg-cornflower-700 dark:bg-cornflower-500 dark:hover:bg-cornflower-600 text-white shadow-xl shadow-cornflower-500/20 transition-all duration-300 px-8 py-6 font-black uppercase tracking-widest rounded-full border-0 transform hover:scale-105 active:scale-95" 
-                    onClick={() => setLocation('/admin/blogs/new')}
+                    onClick={() => setLocation(isWriterRoute ? '/writer/blogs/new' : '/admin/blogs/new')}
                   >
                     <Plus className="w-5 h-5 mr-2" />
                     Create New Post
@@ -454,7 +457,7 @@ export default function BlogsManagement() {
               Your digital logbook is empty. Initialize your first transmission to the network.
             </p>
             <Button 
-              onClick={() => setLocation('/admin/blogs/new')}
+              onClick={() => setLocation(isWriterRoute ? '/writer/blogs/new' : '/admin/blogs/new')}
               className="bg-cornflower-600 hover:bg-cornflower-700 dark:bg-cornflower-500 dark:hover:bg-cornflower-600 text-white px-10 py-6 rounded-full font-black uppercase tracking-widest text-xs shadow-xl shadow-cornflower-500/30 transition-all duration-300 transform hover:scale-105 border-0"
             >
               <Plus className="w-5 h-5 mr-2" />
@@ -735,6 +738,6 @@ export default function BlogsManagement() {
           overflow: hidden;
         }
       `}</style>
-    </AdminLayout>
+    </Layout>
   );
 }

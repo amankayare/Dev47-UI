@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LogOut, ArrowLeft, Sun, Moon, User, ChevronDown, Settings } from 'lucide-react';
 import { ThemeProvider, useTheme } from '@/components/ui/theme-provider';
 import { ProfileModal } from './ProfileModal';
+import { apiUrl } from '@/utils/api';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,42 +54,92 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   useEffect(() => {
-    // Check if user is logged in and is admin or writer
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    
-    if (!token || !user) {
-      setLocation('/login');
-      return;
-    }
+    let isMounted = true;
 
-    const userData = JSON.parse(user);
-    const isAdmin = Boolean(userData.is_admin || userData.role === 'admin');
-    const isWriter = Boolean(userData.role === 'writer' || userData.is_writer || isAdmin);
-
-    if (allowWriter) {
-      if (!isWriter) {
-        toast({
-          title: 'Access Denied',
-          description: 'You need writer or admin access to view this page.',
-          variant: 'destructive',
-        });
-        setLocation('/');
+    async function checkAdminAuth() {
+      const token = localStorage.getItem('token');
+      const user = localStorage.getItem('user');
+      
+      if (!token || !user) {
+        setLocation('/login');
         return;
       }
-    } else {
+
+      let userData: User;
+      try {
+        userData = JSON.parse(user);
+      } catch {
+        setLocation('/login');
+        return;
+      }
+
+      let isAdmin = Boolean(userData.is_admin || userData.role === 'admin');
+      let isWriter = Boolean(userData.role === 'writer' || userData.is_writer || isAdmin);
+
+      // If user appears neither admin nor writer, double-check server profile in case role was just granted
+      if (!isAdmin && !isWriter) {
+        try {
+          const res = await fetch(apiUrl('/api/auth/profile'), {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (res.ok) {
+            const freshData = await res.json();
+            userData = freshData;
+            isAdmin = Boolean(freshData.is_admin || freshData.role === 'admin');
+            isWriter = Boolean(freshData.role === 'writer' || freshData.is_writer || isAdmin);
+            localStorage.setItem('user', JSON.stringify(freshData));
+            if (freshData.token) localStorage.setItem('token', freshData.token);
+          }
+        } catch {}
+      }
+
+      // If user is a writer and not admin, handle routing to dedicated writer workspace
       if (!isAdmin) {
-        toast({
-          title: 'Access Denied',
-          description: 'You need admin access to view this page.',
-          variant: 'destructive',
-        });
-        setLocation('/');
-        return;
+        if (isWriter) {
+          const path = window.location.pathname;
+          if (path === '/admin/blogs') {
+            setLocation('/writer/blogs');
+            return;
+          }
+          if (path === '/admin/blogs/new') {
+            setLocation('/writer/blogs/new');
+            return;
+          }
+          if (path.startsWith('/admin/blogs/edit/')) {
+            const blogId = path.replace('/admin/blogs/edit/', '');
+            setLocation(`/writer/blogs/edit/${blogId}`);
+            return;
+          }
+
+          if (!allowWriter) {
+            toast({
+              title: 'Admin Privileges Required',
+              description: 'Redirected to your Creator Studio.',
+            });
+            setLocation('/writer/blogs');
+            return;
+          }
+        } else {
+          toast({
+            title: 'Access Denied',
+            description: 'You need admin access to view this page.',
+            variant: 'destructive',
+          });
+          setLocation('/');
+          return;
+        }
+      }
+
+      if (isMounted) {
+        setCurrentUser(userData);
       }
     }
 
-    setCurrentUser(userData);
+    checkAdminAuth();
+
+    return () => {
+      isMounted = false;
+    };
   }, [setLocation, toast, allowWriter]);
 
   const handleLogout = () => {

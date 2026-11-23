@@ -12,6 +12,7 @@ import { HtmlCodeEditor } from '@/components/ui/html-code-editor';
 import { useToast } from '@/hooks/use-toast';
 import { ArrowLeft, Save, Sparkles, Code2, Star, Eye, Plus, X, ExternalLink } from 'lucide-react';
 import AdminLayout from '@/components/admin/AdminLayout';
+import WriterLayout from '@/components/writer/WriterLayout';
 import { useAIConvert } from '@/hooks/useAIConvert';
 import { AIContentDraft } from '@/components/ui/AIContentDraft';
 import { apiGet, apiPost, apiPut, apiDelete, apiUrl } from '@/utils/api';
@@ -51,12 +52,23 @@ interface BlogFormData {
   quick_links: Array<{ title: string; url: string }>;
 }
 
-export default function BlogEditor() {
+export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } = {}) {
   const { id } = useParams<{ id?: string }>();
   const isEditing = !!id;
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
+
+  const [currentUser] = useState<any>(() => {
+    try {
+      const u = localStorage.getItem('user');
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
+  });
+  const isAdmin = Boolean(currentUser?.is_admin || currentUser?.role === 'admin');
+  const isWriterRoute = Boolean(isWriterMode || location.startsWith('/writer') || !isAdmin);
   
   const [formData, setFormData] = useState<BlogFormData>({
     title: '',
@@ -67,7 +79,7 @@ export default function BlogEditor() {
     featured: false,
     is_visible: true,
     tag_names: '',
-    author_name: '',
+    author_name: currentUser?.username || '',
     quick_links: []
   });
 
@@ -118,7 +130,7 @@ export default function BlogEditor() {
             description: 'You can only edit your own blog posts.',
             variant: 'destructive',
           });
-          setLocation('/admin/blogs');
+          setLocation(isWriterRoute ? '/writer/blogs' : '/admin/blogs');
           return;
         }
       } catch {}
@@ -132,13 +144,13 @@ export default function BlogEditor() {
         featured: blog.featured,
         is_visible: blog.is_visible,
         tag_names: blog.tags?.map((tag: any) => tag.name).join(', ') || '',
-        author_name: blog.author?.name || '',
+        author_name: blog.author?.name || currentUser?.username || '',
         category_id: blog.category?.id,
         quick_links: blog.quick_links || []
       });
       setActiveTab('html');
     }
-  }, [blog, isEditing, setLocation, toast]);
+  }, [blog, isEditing, setLocation, toast, isWriterRoute, currentUser?.username]);
 
   const createMutation = useMutation({
     mutationFn: async (data: BlogFormData) => {
@@ -154,7 +166,7 @@ export default function BlogEditor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
       toast({ title: 'Success', description: 'Blog created successfully.' });
-      setLocation('/admin/blogs');
+      setLocation(isWriterRoute ? '/writer/blogs' : '/admin/blogs');
     },
   });
 
@@ -173,7 +185,7 @@ export default function BlogEditor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
       toast({ title: 'Success', description: 'Blog updated successfully.' });
-      setLocation('/admin/blogs');
+      setLocation(isWriterRoute ? '/writer/blogs' : '/admin/blogs');
     },
   });
 
@@ -274,21 +286,23 @@ export default function BlogEditor() {
     itemType: 'category',
   });
 
+  const Layout = isWriterRoute ? WriterLayout : AdminLayout;
+  const layoutProps = isWriterRoute
+    ? { title: isEditing ? "Edit Transmission" : "New Transmission", backTo: "/writer/blogs" }
+    : { title: isEditing ? "Edit Transmission" : "New Transmission", backTo: "/admin/blogs", allowWriter: true };
+
   if (isEditing && isLoadingBlog) {
     return (
-      <AdminLayout title="Edit Blog Post">
+      <Layout {...layoutProps}>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="w-12 h-12 border-4 border-cornflower-500 border-t-transparent rounded-full animate-spin"></div>
         </div>
-      </AdminLayout>
+      </Layout>
     );
   }
 
   return (
-    <AdminLayout 
-      title={isEditing ? "Edit Blog Post" : "Create New Blog Post"} 
-      backTo="/admin/blogs"
-    >
+    <Layout {...layoutProps}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 flex items-center justify-between">
           <div className="flex items-center gap-4">
@@ -552,7 +566,7 @@ export default function BlogEditor() {
               <Button 
                 type="button" 
                 variant="outline" 
-                onClick={() => setLocation('/admin/blogs')}
+                onClick={() => setLocation(isWriterRoute ? '/writer/blogs' : '/admin/blogs')}
                 className="px-10 py-7 rounded-full border-2 border-cornflower-200 text-cornflower-700 hover:bg-cornflower-50 dark:border-cornflower-500/20 dark:text-cornflower-300 dark:hover:bg-cornflower-500/10 transition-all font-black uppercase tracking-widest text-[10px]"
               >
                 Abort
@@ -598,7 +612,7 @@ export default function BlogEditor() {
         onConfirm={categoryDeleteConfirmation.confirmDelete}
         isLoading={categoryDeleteMutation.isPending}
       />
-    </AdminLayout>
+    </Layout>
   );
 }
 
