@@ -36,18 +36,15 @@ export const useBlogContentStyles = () => {
       "prose-blockquote:rounded-r-xl prose-blockquote:shadow-sm",
       "prose-blockquote:text-foreground/80 prose-blockquote:font-medium prose-blockquote:italic",
       
-      // Inline code - Sleek, neutral developer pills (never colored blue)
-      "prose-code:bg-muted/80 dark:prose-code:bg-muted/50 prose-code:text-foreground",
-      "prose-code:border prose-code:border-border/60 dark:prose-code:border-border/40",
-      "prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md",
-      "prose-code:text-[0.875em] prose-code:font-mono prose-code:font-medium",
-      "prose-code:before:content-none prose-code:after:content-none",
-      
-      // Pre blocks - Modern IDE styling with border glow
-      "prose-pre:bg-slate-950 dark:prose-pre:bg-black/40",
+      // Pre blocks - Modern IDE styling with border glow and crisp syntax text
+      "prose-pre:bg-slate-950 dark:prose-pre:bg-slate-950",
+      "prose-pre:text-slate-100 dark:prose-pre:text-slate-100",
       "prose-pre:border prose-pre:border-white/10",
       "prose-pre:rounded-xl prose-pre:p-5 prose-pre:my-8",
       "prose-pre:shadow-2xl prose-pre:overflow-x-auto prose-pre:text-[0.95em] prose-pre:leading-relaxed",
+      
+      // Inline code - Strip default pseudo-element quotes
+      "prose-code:before:content-none prose-code:after:content-none",
       
       // Lists - Spaced cleanly
       "prose-ul:my-6 prose-ul:pl-8 prose-ol:my-6 prose-ol:pl-8",

@@ -955,7 +955,7 @@ export default function WriterBlogEditor() {
                       onInput={handleEditorInput}
                       onKeyDown={handleKeyDown}
                       onPaste={handlePaste}
-                      className="p-6 sm:p-10 min-h-[520px] w-full focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-a:decoration-primary/60 hover:prose-a:text-primary prose-code:bg-muted/80 dark:prose-code:bg-muted/50 prose-code:text-foreground prose-code:border prose-code:border-border/60 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md prose-code:font-mono prose-code:text-[0.875em] prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4 bg-background/20"
+                      className="p-6 sm:p-10 min-h-[520px] w-full focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-a:decoration-primary/60 hover:prose-a:text-primary prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4 bg-background/20"
                       suppressContentEditableWarning={true}
                     />
                   )}
