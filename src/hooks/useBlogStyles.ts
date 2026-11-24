@@ -26,9 +26,8 @@ export const useBlogContentStyles = () => {
       "prose-p:text-muted-foreground prose-p:leading-7 prose-p:text-[15px]",
       "prose-p:mb-5",
       
-      // Links - Glowing interaction
-      "prose-a:text-primary prose-a:no-underline prose-a:font-semibold",
-      "hover:prose-a:text-primary/80 hover:prose-a:underline hover:prose-a:underline-offset-4 prose-a:transition-all",
+      // Links - Crisp, accessible with subtle underline
+      "prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-a:decoration-primary/60 hover:prose-a:text-primary hover:prose-a:decoration-primary prose-a:font-medium prose-a:transition-all",
       
       // Blockquotes - Glassmorphic design
       "prose-blockquote:border-l-4 prose-blockquote:border-primary/50",
@@ -37,10 +36,11 @@ export const useBlogContentStyles = () => {
       "prose-blockquote:rounded-r-xl prose-blockquote:shadow-sm",
       "prose-blockquote:text-foreground/80 prose-blockquote:font-medium prose-blockquote:italic",
       
-      // Inline code - Sleek pills
-      "prose-code:bg-primary/10 prose-code:text-primary dark:prose-code:text-primary-foreground",
-      "prose-code:px-2 prose-code:py-0.5 prose-code:rounded-md",
-      "prose-code:text-[0.9em] prose-code:font-mono prose-code:font-semibold",
+      // Inline code - Sleek, neutral developer pills (never colored blue)
+      "prose-code:bg-muted/80 dark:prose-code:bg-muted/50 prose-code:text-foreground",
+      "prose-code:border prose-code:border-border/60 dark:prose-code:border-border/40",
+      "prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded-md",
+      "prose-code:text-[0.875em] prose-code:font-mono prose-code:font-medium",
       "prose-code:before:content-none prose-code:after:content-none",
       
       // Pre blocks - Modern IDE styling with border glow

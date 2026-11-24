@@ -340,6 +340,25 @@ html.dark .admin-theme-scope .admin-grant-action:hover {
   background-color: hsl(202, 34%, 25%) !important;
 }
 
+/* Blog Callouts & Accent Text Light Mode Legibility */
+:not(.dark) .blog-content .text-cornflower-100,
+:not(.dark) .blog-content .text-cornflower-200,
+:not(.dark) .blog-content .text-cornflower-300,
+:not(.dark) .prose .text-cornflower-100,
+:not(.dark) .prose .text-cornflower-200,
+:not(.dark) .prose .text-cornflower-300,
+html:not(.dark) .text-cornflower-100,
+html:not(.dark) .text-cornflower-200,
+html:not(.dark) .text-cornflower-300 {
+  color: hsl(var(--foreground)) !important;
+}
+
+:not(.dark) .blog-content .text-cornflower-400,
+:not(.dark) .prose .text-cornflower-400,
+html:not(.dark) .text-cornflower-400 {
+  color: hsl(var(--cornflower-700)) !important;
+}
+
 @layer base {
   * {
     @apply border-border;
