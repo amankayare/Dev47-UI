@@ -464,117 +464,8 @@ export default function WriterBlogEditor() {
     }
   };
 
-  return (
-    <WriterLayout title={isEditing ? 'Edit Article' : 'New Article'} backTo="/writer/blogs">
-      <div className="max-w-7xl mx-auto space-y-6 pb-20">
-        {/* Top Control Bar */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-cornflower-200/50 dark:border-cornflower-500/20 rounded-2xl p-4 shadow-sm">
-          <div className="flex items-center gap-3">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setLocation('/writer/blogs')}
-              className="rounded-full gap-2 text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              My Articles
-            </Button>
-            <div className="h-4 w-px bg-border/60" />
-            <div className="flex items-center gap-2">
-              <Badge
-                variant="outline"
-                className={`font-mono text-xs px-2.5 py-1 rounded-full uppercase tracking-wider ${
-                  isVisible
-                    ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
-                    : 'border-yellow-500/30 text-yellow-600 dark:text-yellow-400 bg-yellow-500/10'
-                }`}
-              >
-                {isVisible ? 'Live / Public' : 'Draft / Private'}
-              </Badge>
-              <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/50 px-3 py-1 rounded-full border border-border/40">
-                <Clock className="w-3.5 h-3.5 text-cornflower-400" />
-                <span>{stats.words} words</span>
-                <span>•</span>
-                <span>~{manualReadingTime || stats.estimatedMinutes} min read</span>
-              </div>
-            </div>
-          </div>
 
-          {/* View Mode & Publish Actions */}
-          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
-            {/* View Mode Switcher */}
-            <div className="bg-muted/60 p-1 rounded-xl flex items-center border border-border/50 text-xs">
-              <button
-                type="button"
-                onClick={() => setViewMode('write')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
-                  viewMode === 'write'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <PenTool className="w-3.5 h-3.5" />
-                Write
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('split')}
-                className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
-                  viewMode === 'split'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Columns className="w-3.5 h-3.5" />
-                Split
-              </button>
-              <button
-                type="button"
-                onClick={() => setViewMode('preview')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
-                  viewMode === 'preview'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Eye className="w-3.5 h-3.5" />
-                Preview
-              </button>
-            </div>
-
-            {/* Save as Draft */}
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              disabled={isSaving}
-              onClick={() => handleSave(false)}
-              className="rounded-xl border-border hover:bg-muted font-medium text-xs h-9 px-3 gap-1.5"
-            >
-              <Save className="w-3.5 h-3.5" />
-              Save Draft
-            </Button>
-
-            {/* Publish Article */}
-            <Button
-              type="button"
-              size="sm"
-              disabled={isSaving}
-              onClick={() => handleSave(true)}
-              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md h-9 px-4 gap-1.5"
-            >
-              <Send className="w-3.5 h-3.5" />
-              {isEditing ? 'Update & Publish' : 'Publish Article'}
-            </Button>
-          </div>
-        </div>
-
-        {/* Main Editor Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-          {/* Main Writing Canvas (8 cols or full width in preview) */}
-          <div className={`${viewMode === 'split' ? 'lg:col-span-6' : viewMode === 'preview' ? 'lg:col-span-8 lg:col-start-3' : 'lg:col-span-8'} space-y-6`}>
-            {/* Live Preview Mode */}
-            {viewMode === 'preview' ? (
+  const renderFullPreview = () => (
               <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-10 shadow-xl space-y-8">
                 {/* Preview Header */}
                 <div className="space-y-4">
@@ -651,8 +542,9 @@ export default function WriterBlogEditor() {
                   </div>
                 )}
               </div>
-            ) : (
-              /* Writing Canvas */
+  );
+
+  const renderWritingCanvas = () => (
               <div className="space-y-4">
                 {/* Title & Summary Input Card */}
                 <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
@@ -973,12 +865,10 @@ export default function WriterBlogEditor() {
                   </div>
                 </div>
               </div>
-            )}
-          </div>
+  );
 
-          {/* Split Screen Live Reader View (shown only in 'split' mode on wide screens) */}
-          {viewMode === 'split' && (
-            <div className="lg:col-span-6 bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-h-[850px] overflow-y-auto sticky top-24">
+  const renderLivePreviewCard = () => (
+            <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-h-[850px] overflow-y-auto">
               <div className="flex items-center justify-between pb-3 border-b border-border/50">
                 <div className="flex items-center gap-2">
                   <Eye className="w-4 h-4 text-cornflower-400" />
@@ -1002,12 +892,9 @@ export default function WriterBlogEditor() {
                 <div dangerouslySetInnerHTML={{ __html: normalizedContent }} />
               </div>
             </div>
-          )}
+  );
 
-          {/* Settings & Metadata Sidebar (4 cols) */}
-          {viewMode !== 'preview' && (
-            <div className={`${viewMode === 'split' ? 'lg:col-span-12' : 'lg:col-span-4'} space-y-6`}>
-              {/* Publication Settings Card */}
+  const renderPublicationSettings = () => (
               <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm space-y-5">
                 <div className="flex items-center justify-between border-b border-border/50 pb-3">
                   <div className="flex items-center gap-2">
@@ -1064,8 +951,9 @@ export default function WriterBlogEditor() {
                   </p>
                 </div>
               </div>
+  );
 
-              {/* Cover Image Card */}
+  const renderCoverImage = () => (
               <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm space-y-4">
                 <div className="flex items-center gap-2 border-b border-border/50 pb-3">
                   <ImageIcon className="w-4 h-4 text-indigo-500" />
@@ -1082,8 +970,9 @@ export default function WriterBlogEditor() {
                   placeholder="https://example.com/cover.jpg or upload..."
                 />
               </div>
+  );
 
-              {/* Tags Card */}
+  const renderTags = () => (
               <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-border/50 pb-3">
                   <span className="font-bold text-sm text-foreground">Tags & Keywords</span>
@@ -1155,8 +1044,9 @@ export default function WriterBlogEditor() {
                   </div>
                 </div>
               </div>
+  );
 
-              {/* Reference Quick Links Card */}
+  const renderQuickLinks = () => (
               <div className="bg-card border border-border/60 rounded-3xl p-6 shadow-sm space-y-4">
                 <div className="flex items-center justify-between border-b border-border/50 pb-3">
                   <span className="font-bold text-sm text-foreground">Reference Links</span>
@@ -1212,9 +1102,175 @@ export default function WriterBlogEditor() {
                   </div>
                 )}
               </div>
+  );
+
+  return (
+    <WriterLayout title={isEditing ? 'Edit Article' : 'New Article'} backTo="/writer/blogs">
+      <div className="max-w-7xl mx-auto space-y-6 pb-20">
+        {/* Top Control Bar */}
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-white/70 dark:bg-black/40 backdrop-blur-xl border border-cornflower-200/50 dark:border-cornflower-500/20 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-3">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setLocation('/writer/blogs')}
+              className="rounded-full gap-2 text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="w-4 h-4" />
+              My Articles
+            </Button>
+            <div className="h-4 w-px bg-border/60" />
+            <div className="flex items-center gap-2">
+              <Badge
+                variant="outline"
+                className={`font-mono text-xs px-2.5 py-1 rounded-full uppercase tracking-wider ${
+                  isVisible
+                    ? 'border-emerald-500/30 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10'
+                    : 'border-yellow-500/30 text-yellow-600 dark:text-yellow-400 bg-yellow-500/10'
+                }`}
+              >
+                {isVisible ? 'Live / Public' : 'Draft / Private'}
+              </Badge>
+              <div className="hidden sm:flex items-center gap-2 text-xs text-muted-foreground font-mono bg-muted/50 px-3 py-1 rounded-full border border-border/40">
+                <Clock className="w-3.5 h-3.5 text-cornflower-400" />
+                <span>{stats.words} words</span>
+                <span>•</span>
+                <span>~{manualReadingTime || stats.estimatedMinutes} min read</span>
+              </div>
             </div>
-          )}
+          </div>
+
+          {/* View Mode & Publish Actions */}
+          <div className="flex flex-wrap items-center gap-2 w-full md:w-auto justify-end">
+            {/* View Mode Switcher */}
+            <div className="bg-muted/60 p-1 rounded-xl flex items-center border border-border/50 text-xs">
+              <button
+                type="button"
+                onClick={() => setViewMode('write')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                  viewMode === 'write'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <PenTool className="w-3.5 h-3.5" />
+                Write
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('split')}
+                className={`hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                  viewMode === 'split'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Columns className="w-3.5 h-3.5" />
+                Split
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode('preview')}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all ${
+                  viewMode === 'preview'
+                    ? 'bg-background text-foreground shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                <Eye className="w-3.5 h-3.5" />
+                Preview
+              </button>
+            </div>
+
+            {/* Save as Draft */}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              disabled={isSaving}
+              onClick={() => handleSave(false)}
+              className="rounded-xl border-border hover:bg-muted font-medium text-xs h-9 px-3 gap-1.5"
+            >
+              <Save className="w-3.5 h-3.5" />
+              Save Draft
+            </Button>
+
+            {/* Publish Article */}
+            <Button
+              type="button"
+              size="sm"
+              disabled={isSaving}
+              onClick={() => handleSave(true)}
+              className="rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-xs shadow-md h-9 px-4 gap-1.5"
+            >
+              <Send className="w-3.5 h-3.5" />
+              {isEditing ? 'Update & Publish' : 'Publish Article'}
+            </Button>
+          </div>
         </div>
+
+
+        {/* Main Editor Body based on View Mode */}
+        {viewMode === 'preview' && (
+          <div className="max-w-4xl mx-auto space-y-6">
+            {renderFullPreview()}
+          </div>
+        )}
+
+        {viewMode === 'split' && (
+          <div className="space-y-8">
+            {/* Top: 2-Column Side-by-Side Studio */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {/* Left Column: Writing Canvas */}
+              <div className="space-y-4">
+                {renderWritingCanvas()}
+              </div>
+
+              {/* Right Column: Live Reader Preview */}
+              {renderLivePreviewCard()}
+            </div>
+
+            {/* Bottom: Article Settings & Metadata Section */}
+            <div className="pt-8 border-t border-border/60 space-y-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-cornflower-500" />
+                  <h3 className="font-bold text-base text-foreground">Article Configuration & Settings</h3>
+                </div>
+                <Badge variant="outline" className="text-xs font-mono">Publication & Metadata</Badge>
+              </div>
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+                <div className="space-y-6">
+                  {renderPublicationSettings()}
+                  {renderCoverImage()}
+                </div>
+                <div className="space-y-6">
+                  {renderTags()}
+                  {renderQuickLinks()}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {viewMode === 'write' && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left: Writing Canvas (8 cols) */}
+            <div className="lg:col-span-8 space-y-4">
+              {renderWritingCanvas()}
+            </div>
+
+            {/* Right: Settings Sidebar (4 cols) */}
+            <div className="lg:col-span-4 space-y-6">
+              {renderPublicationSettings()}
+              {renderCoverImage()}
+              {renderTags()}
+              {renderQuickLinks()}
+            </div>
+          </div>
+        )}
+
       </div>
     </WriterLayout>
   );
