@@ -1,3 +1,5 @@
+import { clearAuthSession } from '@/utils/authSession';
+
 // API utilities with automatic token expiration handling
 
 export class AuthError extends Error {
@@ -71,15 +73,9 @@ export const apiAssetUrl = (path: string): string => {
 };
 
 export const handleTokenExpiration = (errorMessage?: string) => {
-  localStorage.removeItem('token');
-  localStorage.removeItem('user');
-  
-  // Store the error message for the login page to display
-  if (errorMessage) {
-    localStorage.setItem('authError', errorMessage);
-  } else {
-    localStorage.setItem('authError', 'Your session has expired. Please login again.');
-  }
+  clearAuthSession({
+    errorMessage: errorMessage || 'Your session has expired. Please login again.',
+  });
   
   // Redirect to login page
   window.location.href = '/login';

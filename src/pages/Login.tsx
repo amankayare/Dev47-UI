@@ -11,6 +11,8 @@ import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { useTheme } from '@/hooks/use-theme';
 import { Home, Eye, EyeOff } from 'lucide-react';
 import { apiUrl } from '@/utils/api';
+import { setAuthSession } from '@/utils/authSession';
+import { isDev47Subdomain } from '@/utils/urlUtils';
 
 interface LoginData {
   username: string;
@@ -78,9 +80,9 @@ export default function Login() {
       return response.json();
     },
     onSuccess: (data) => {
-      localStorage.setItem('token', data.access_token);
-      localStorage.setItem('user', JSON.stringify(data.user));
-      localStorage.removeItem('authError'); // Clear any previous auth errors
+      // 1. Establish fresh session and wipe all prior in-memory queries/caches
+      setAuthSession(data.access_token, data.user);
+
       toast({
         title: 'Success',
         description: 'Successfully logged in!',
@@ -104,8 +106,8 @@ export default function Login() {
         console.log('Redirecting admin to admin panel');
         setLocation('/admin');
       } else {
-        console.log('Redirecting non-admin user to blog home');
-        setLocation('/blogs');
+        console.log('Redirecting user to blog home');
+        setLocation(isDev47Subdomain() ? '/' : '/blogs');
       }
     },
     onError: (error: Error) => {

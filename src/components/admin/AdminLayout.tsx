@@ -8,6 +8,7 @@ import { ThemeProvider, useTheme } from '@/components/ui/theme-provider';
 import { ProfileModal } from './ProfileModal';
 import { apiUrl } from '@/utils/api';
 import { isDev47Subdomain } from '@/utils/urlUtils';
+import { logoutSession, clearAuthSession } from '@/utils/authSession';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,8 +85,7 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
             headers: { Authorization: `Bearer ${token}` }
           });
           if (res.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
+            clearAuthSession();
             setLocation('/login');
             return;
           }
@@ -95,7 +95,6 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
             isAdmin = Boolean(freshData.is_admin || freshData.role === 'admin');
             isWriter = Boolean(freshData.role === 'writer' || freshData.is_writer || isAdmin);
             localStorage.setItem('user', JSON.stringify(freshData));
-            if (freshData.token) localStorage.setItem('token', freshData.token);
           }
         } catch {}
       }
@@ -150,9 +149,7 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
   }, [setLocation, toast, allowWriter]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setLocation('/');
+    logoutSession();
   };
 
   if (!currentUser) return null;

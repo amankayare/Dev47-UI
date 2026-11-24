@@ -15,6 +15,7 @@ import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { Switch } from '@/components/ui/switch';
 import { NewsletterBannerModal } from '@/components/admin/NewsletterBannerModal';
+import { getCurrentUser } from '@/utils/authSession';
 
 interface Blog {
   id: number;
@@ -38,14 +39,7 @@ export default function BlogsManagement({ isWriterMode }: { isWriterMode?: boole
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
 
-  const [currentUser] = useState<any>(() => {
-    try {
-      const u = localStorage.getItem('user');
-      return u ? JSON.parse(u) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [currentUser] = useState<any>(() => getCurrentUser());
   const isAdmin = Boolean(currentUser?.is_admin || currentUser?.role === 'admin');
   const isWriterRoute = Boolean(isWriterMode || location.startsWith('/writer') || !isAdmin);
   
@@ -144,7 +138,7 @@ export default function BlogsManagement({ isWriterMode }: { isWriterMode?: boole
   });
 
   const { data: blogsData, isLoading, error } = useQuery({
-    queryKey: ['/api/blogs/admin', page, pageSize, debouncedSearch, statusFilter],
+    queryKey: ['/api/blogs/admin', currentUser?.id, page, pageSize, debouncedSearch, statusFilter],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),

@@ -48,6 +48,7 @@ import WriterLayout from '@/components/writer/WriterLayout';
 import { CategoryDropdown, Category } from '@/components/ui/CategoryDropdown';
 import ImageInput from '@/components/ui/ImageInput';
 import { apiGet, apiPost, apiPut, apiUrl } from '@/utils/api';
+import { getCurrentUser } from '@/utils/authSession';
 import { useBlogContentStyles } from '@/hooks/useBlogStyles';
 
 interface QuickLink {
@@ -79,14 +80,7 @@ export default function WriterBlogEditor() {
   const blogStyles = useBlogContentStyles();
 
   // Current logged in writer
-  const [currentUser] = useState<any>(() => {
-    try {
-      const u = localStorage.getItem('user');
-      return u ? JSON.parse(u) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [currentUser] = useState<any>(() => getCurrentUser());
 
   // Editor states
   const [viewMode, setViewMode] = useState<'write' | 'split' | 'preview'>('write');

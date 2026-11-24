@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { apiUrl } from '@/utils/api';
 import { isDev47Subdomain } from '@/utils/urlUtils';
+import { logoutSession, clearAuthSession } from '@/utils/authSession';
 
 interface UserData {
   id: number;
@@ -93,8 +94,7 @@ function WriterLayoutContent({ children, title, backTo = '/profile' }: WriterLay
         });
 
         if (res.status === 401) {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
+          clearAuthSession();
           if (isMounted) {
             toast({
               title: 'Session Expired',
@@ -145,9 +145,7 @@ function WriterLayoutContent({ children, title, backTo = '/profile' }: WriterLay
   }, [setLocation, toast]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setLocation('/');
+    logoutSession();
   };
 
   if (isVerifying || !currentUser) {

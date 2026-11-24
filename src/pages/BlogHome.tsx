@@ -43,6 +43,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useBlogs } from '@/hooks/useBlogs';
 import { apiAssetUrl, apiUrl } from '@/utils/api';
 import { normalizeImageUrl, getBlogRootUrl, isDev47Subdomain } from '@/utils/urlUtils';
+import { getCurrentUser, logoutSession } from '@/utils/authSession';
 
 interface Blog {
   id: number;
@@ -313,19 +314,14 @@ export default function BlogHome() {
   const [isPageTransitioning, setIsPageTransitioning] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check authentication status
+  // Check and listen to authentication status
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-    if (token && user) {
-      try {
-        setCurrentUser(JSON.parse(user));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
+    const syncUser = () => {
+      setCurrentUser(getCurrentUser());
+    };
+    syncUser();
+    window.addEventListener('dev47:auth-change', syncUser);
+    return () => window.removeEventListener('dev47:auth-change', syncUser);
   }, []);
 
   // Handle URL tag and newsletter confirmation parameters
@@ -465,16 +461,8 @@ export default function BlogHome() {
   const hasActiveFilters = search !== '' || selectedCategory !== null || selectedTag !== null;
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-    const blogRoot = getBlogRootUrl();
-    if (blogRoot.startsWith('http')) {
-      window.location.href = blogRoot;
-    } else {
-      setLocation(blogRoot);
-    }
+    logoutSession();
   };
 
   // Top featured blogs — always from the full unfiltered list

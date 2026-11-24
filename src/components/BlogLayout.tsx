@@ -20,6 +20,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { apiAssetUrl, apiUrl } from '@/utils/api';
 import { useBookmarks } from '@/hooks/useBookmarks';
 import { isDev47Subdomain, getBlogRootUrl, getPortfolioRootUrl } from '@/utils/urlUtils';
+import { getCurrentUser, logoutSession } from '@/utils/authSession';
 
 interface BlogAuthor {
   id: number;
@@ -268,36 +269,22 @@ export default function BlogLayout({
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
-  // Check authentication status
+  // Check and listen to authentication status
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    const user = localStorage.getItem('user');
-
-    if (token && user) {
-      try {
-        setCurrentUser(JSON.parse(user));
-      } catch (error) {
-        console.error('Error parsing user data:', error);
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-      }
-    }
+    const syncUser = () => {
+      setCurrentUser(getCurrentUser());
+    };
+    syncUser();
+    window.addEventListener('dev47:auth-change', syncUser);
+    return () => window.removeEventListener('dev47:auth-change', syncUser);
   }, []);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    setCurrentUser(null);
     toast({
       title: "Logged out successfully",
       description: "You have been logged out.",
     });
-    const blogRoot = getBlogRootUrl();
-    if (blogRoot.startsWith('http')) {
-      window.location.href = blogRoot;
-    } else {
-      setLocation(blogRoot);
-    }
+    logoutSession();
   };
 
   // Loading state

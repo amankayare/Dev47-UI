@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useLocation } from 'wouter';
 import { apiGet, apiPost, apiDelete } from '@/utils/api';
 import { useToast } from '@/hooks/use-toast';
+import { getCurrentUser, getAuthToken } from '@/utils/authSession';
 
 export interface BookmarkedBlog {
   id: number;
@@ -22,8 +23,10 @@ export function useBookmarks() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
 
-  const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-  const isAuthenticated = Boolean(token);
+  const currentUser = getCurrentUser();
+  const token = getAuthToken();
+  const isAuthenticated = Boolean(token && currentUser);
+  const userId = currentUser?.id ?? 'guest';
 
   // Fetch all bookmarked blogs (for Profile Dashboard)
   const {
@@ -31,7 +34,7 @@ export function useBookmarks() {
     isLoading: isLoadingBookmarks,
     refetch: refetchBookmarks,
   } = useQuery<BookmarkedBlog[]>({
-    queryKey: ['/api/user/bookmarks'],
+    queryKey: ['/api/user/bookmarks', userId],
     queryFn: async () => {
       if (!isAuthenticated) return [];
       try {
@@ -42,7 +45,7 @@ export function useBookmarks() {
       }
     },
     enabled: isAuthenticated,
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 1000 * 60 * 2,
   });
 
   // Fetch list of bookmarked IDs (for fast badge/icon lookup on cards)
@@ -50,7 +53,7 @@ export function useBookmarks() {
     data: bookmarkIdsData,
     isLoading: isLoadingIds,
   } = useQuery<{ bookmark_ids: number[] }>({
-    queryKey: ['/api/user/bookmarks/ids'],
+    queryKey: ['/api/user/bookmarks/ids', userId],
     queryFn: async () => {
       if (!isAuthenticated) return { bookmark_ids: [] };
       try {
@@ -61,7 +64,7 @@ export function useBookmarks() {
       }
     },
     enabled: isAuthenticated,
-    staleTime: 1000 * 60 * 5,
+    staleTime: 1000 * 60 * 2,
   });
 
   const bookmarkIds = bookmarkIdsData?.bookmark_ids || [];
@@ -81,15 +84,15 @@ export function useBookmarks() {
     },
     onMutate: async ({ blogId, currentlyBookmarked }) => {
       // Cancel queries
-      await queryClient.cancelQueries({ queryKey: ['/api/user/bookmarks/ids'] });
-      await queryClient.cancelQueries({ queryKey: ['/api/user/bookmarks'] });
+      await queryClient.cancelQueries({ queryKey: ['/api/user/bookmarks/ids', userId] });
+      await queryClient.cancelQueries({ queryKey: ['/api/user/bookmarks', userId] });
 
       // Snapshot previous state
-      const prevIdsData = queryClient.getQueryData<{ bookmark_ids: number[] }>(['/api/user/bookmarks/ids']);
-      const prevBookmarks = queryClient.getQueryData<BookmarkedBlog[]>(['/api/user/bookmarks']);
+      const prevIdsData = queryClient.getQueryData<{ bookmark_ids: number[] }>(['/api/user/bookmarks/ids', userId]);
+      const prevBookmarks = queryClient.getQueryData<BookmarkedBlog[]>(['/api/user/bookmarks', userId]);
 
       // Optimistically update IDs
-      queryClient.setQueryData<{ bookmark_ids: number[] }>(['/api/user/bookmarks/ids'], (old) => {
+      queryClient.setQueryData<{ bookmark_ids: number[] }>(['/api/user/bookmarks/ids', userId], (old) => {
         const currentList = old?.bookmark_ids || [];
         return {
           bookmark_ids: currentlyBookmarked
@@ -100,7 +103,7 @@ export function useBookmarks() {
 
       // Optimistically update bookmarks list if removing
       if (currentlyBookmarked) {
-        queryClient.setQueryData<BookmarkedBlog[]>(['/api/user/bookmarks'], (old) => {
+        queryClient.setQueryData<BookmarkedBlog[]>(['/api/user/bookmarks', userId], (old) => {
           return (old || []).filter((b) => b.id !== blogId);
         });
       }
@@ -110,10 +113,10 @@ export function useBookmarks() {
     onError: (_err, _vars, context) => {
       // Revert on error
       if (context?.prevIdsData) {
-        queryClient.setQueryData(['/api/user/bookmarks/ids'], context.prevIdsData);
+        queryClient.setQueryData(['/api/user/bookmarks/ids', userId], context.prevIdsData);
       }
       if (context?.prevBookmarks) {
-        queryClient.setQueryData(['/api/user/bookmarks'], context.prevBookmarks);
+        queryClient.setQueryData(['/api/user/bookmarks', userId], context.prevBookmarks);
       }
       toast({
         title: 'Error',
@@ -122,8 +125,8 @@ export function useBookmarks() {
       });
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/user/bookmarks/ids'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/user/bookmarks'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/bookmarks/ids', userId] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/bookmarks', userId] });
     },
   });
 

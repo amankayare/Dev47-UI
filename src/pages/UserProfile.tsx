@@ -47,6 +47,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { apiUrl, apiAssetUrl } from '@/utils/api';
 import { useBookmarks, BookmarkedBlog } from '@/hooks/useBookmarks';
 import { getBlogRootUrl, isDev47Subdomain } from '@/utils/urlUtils';
+import { getCurrentUser, getAuthToken, clearAuthSession, logoutSession, updateSessionUser } from '@/utils/authSession';
 
 interface UserProfileData {
   id: number;
@@ -104,20 +105,31 @@ export default function UserProfile() {
     confirm: false,
   });
 
-  // Fetch user profile
+  const currentSession = getCurrentUser();
+  const token = getAuthToken();
+
+  useEffect(() => {
+    if (!token || !currentSession) {
+      setLocation('/login');
+    }
+  }, [token, currentSession, setLocation]);
+
+  // Fetch user profile - strictly scoped to current user identity with 0 staleTime
   const { data: user, isLoading, error } = useQuery<UserProfileData>({
-    queryKey: ['user-profile'],
+    queryKey: ['user-profile', currentSession?.id || currentSession?.username || 'me'],
     queryFn: async (): Promise<UserProfileData> => {
-      const token = localStorage.getItem('token');
+      const activeToken = getAuthToken();
+      if (!activeToken) {
+        throw new Error('Not authenticated');
+      }
       const response = await fetch(apiUrl('/api/auth/profile'), {
         headers: {
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${activeToken}`,
         },
       });
 
       if (response.status === 401) {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
+        clearAuthSession({ errorMessage: 'Your session has expired. Please login again.' });
         toast({
           title: 'Session Expired',
           description: 'Your session has expired. Please login again.',
@@ -133,6 +145,9 @@ export default function UserProfile() {
 
       return response.json();
     },
+    enabled: Boolean(token && currentSession),
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
 
   // Update profile data when user data is loaded
@@ -142,12 +157,14 @@ export default function UserProfile() {
         username: user.username,
         email: user.email,
       });
-      try {
-        localStorage.setItem('user', JSON.stringify(user));
-        if ((user as any).token) {
-          localStorage.setItem('token', (user as any).token);
-        }
-      } catch {}
+      // Safely update profile metadata without touching security token
+      updateSessionUser({
+        username: user.username,
+        email: user.email,
+        is_admin: Boolean(user.is_admin),
+        role: user.role,
+        is_writer: Boolean(user.is_writer),
+      });
     }
   }, [user]);
 
@@ -184,11 +201,10 @@ export default function UserProfile() {
         description: 'Your profile information has been updated.',
       });
 
-      const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-      const updatedUser = { ...currentUser, ...data.user };
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-
-      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      updateSessionUser(data.user);
+      queryClient.invalidateQueries({
+        queryKey: ['user-profile', currentSession?.id || currentSession?.username || 'me'],
+      });
     },
     onError: (err: Error) => {
       toast({
@@ -305,18 +321,11 @@ export default function UserProfile() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
     toast({
       title: 'Logged out successfully',
       description: 'You have been logged out.',
     });
-    const blogRoot = getBlogRootUrl();
-    if (blogRoot.startsWith('http')) {
-      window.location.href = blogRoot;
-    } else {
-      setLocation(blogRoot);
-    }
+    logoutSession();
   };
 
   // Filter bookmarked blogs by search
