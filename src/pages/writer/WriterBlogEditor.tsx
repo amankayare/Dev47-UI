@@ -544,10 +544,8 @@ export default function WriterBlogEditor() {
               </div>
   );
 
-  const renderWritingCanvas = () => (
-              <div className="space-y-4">
-                {/* Title & Summary Input Card */}
-                <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
+  const renderTitleAndSummaryCard = () => (
+    <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6">
                   {/* Article Title */}
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
@@ -583,315 +581,279 @@ export default function WriterBlogEditor() {
                     />
                   </div>
                 </div>
-
-                {/* Traditional Rich Writing Canvas Card */}
-                <div className="bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm flex flex-col">
-                  {/* Rich Formatting Toolbar */}
-                  <div className="p-3 bg-muted/80 dark:bg-muted/40 border-b border-border/70 flex flex-wrap items-center gap-1.5 relative z-10 w-full">
-                    {/* Headings */}
-                    <div className="flex items-center gap-0.5 pr-1 border-r border-border/60">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('formatBlock', '<h1>')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Heading 1"
-                      >
-                        <Heading1 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('formatBlock', '<h2>')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Heading 2"
-                      >
-                        <Heading2 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('formatBlock', '<h3>')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Heading 3"
-                      >
-                        <Heading3 className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('formatBlock', '<p>')}
-                        className="h-8 px-2 text-xs font-bold rounded-lg hover:bg-background"
-                        title="Paragraph"
-                      >
-                        P
-                      </Button>
-                    </div>
-
-                    {/* Inline Formatting */}
-                    <div className="flex items-center gap-0.5 px-1 border-r border-border/60">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('bold')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Bold (Ctrl+B)"
-                      >
-                        <Bold className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('italic')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Italic (Ctrl+I)"
-                      >
-                        <Italic className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('underline')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Underline (Ctrl+U)"
-                      >
-                        <Underline className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('strikeThrough')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Strikethrough"
-                      >
-                        <Strikethrough className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    {/* Lists & Quotes */}
-                    <div className="flex items-center gap-0.5 px-1 border-r border-border/60">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('insertUnorderedList')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Bulleted List"
-                      >
-                        <List className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('insertOrderedList')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Numbered List"
-                      >
-                        <ListOrdered className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('formatBlock', '<blockquote>')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Blockquote"
-                      >
-                        <Quote className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('insertHorizontalRule')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Horizontal Divider"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    {/* Rich Elements: Link, Image, Code Block, Table, Callout */}
-                    <div className="flex items-center gap-0.5 px-1 border-r border-border/60">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleInsertLink}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background text-cornflower-500"
-                        title="Insert Hyperlink"
-                      >
-                        <LinkIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleInsertImage}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background text-emerald-500"
-                        title="Insert Image into Content"
-                      >
-                        <ImageIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleInsertCodeBlock}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background text-indigo-400"
-                        title="Insert Code Block"
-                      >
-                        <FileCode className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleInsertTable}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Insert Table"
-                      >
-                        <TableIcon className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={handleInsertCallout}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background text-amber-500"
-                        title="Insert Note Box"
-                      >
-                        <Info className="w-4 h-4" />
-                      </Button>
-                    </div>
-
-                    {/* History & Clear */}
-                    <div className="flex items-center gap-0.5 pl-1">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('undo')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Undo (Ctrl+Z)"
-                      >
-                        <Undo className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('redo')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background"
-                        title="Redo (Ctrl+Y)"
-                      >
-                        <Redo className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => execCmd('removeFormat')}
-                        className="h-8 w-8 p-0 rounded-lg hover:bg-background text-muted-foreground"
-                        title="Clear Formatting"
-                      >
-                        <Eraser className="w-4 h-4" />
-                      </Button>
-                      <div className="h-4 w-px bg-border/60 mx-1" />
-                      <Button
-                        type="button"
-                        variant={isSourceMode ? "secondary" : "ghost"}
-                        size="sm"
-                        onClick={() => {
-                          if (isSourceMode) {
-                            if (editorRef.current) {
-                              editorRef.current.innerHTML = contentHtml;
-                            }
-                          }
-                          setIsSourceMode(!isSourceMode);
-                        }}
-                        className={`h-8 px-2.5 gap-1.5 text-xs font-mono rounded-lg transition-colors ${
-                          isSourceMode
-                            ? 'bg-cornflower-500/20 text-cornflower-400 border border-cornflower-500/30'
-                            : 'hover:bg-background text-cornflower-500'
-                        }`}
-                        title="Toggle HTML Source Code"
-                      >
-                        <Code className="w-4 h-4" />
-                        <span>{isSourceMode ? 'Visual Mode' : 'HTML Code'}</span>
-                      </Button>
-                    </div>
-                  </div>
-
-                  {/* Visual ContentEditable Canvas or HTML Source Mode */}
-                  {isSourceMode ? (
-                    <Textarea
-                      value={contentHtml}
-                      onChange={(e) => setContentHtml(e.target.value)}
-                      className="p-6 sm:p-8 min-h-[520px] font-mono text-sm leading-relaxed border-none focus-visible:ring-0 bg-slate-950 text-slate-100 resize-y rounded-none"
-                      placeholder="<p>Write or paste your raw HTML code here...</p>"
-                    />
-                  ) : (
-                    <div
-                      ref={editorRef}
-                      contentEditable
-                      onInput={handleEditorInput}
-                      onKeyDown={handleKeyDown}
-                      onPaste={handlePaste}
-                      className="p-6 sm:p-10 min-h-[520px] w-full focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-a:decoration-primary/60 hover:prose-a:text-primary prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4 bg-background/20"
-                      suppressContentEditableWarning={true}
-                    />
-                  )}
-
-                  {/* Footer Word Count Bar */}
-                  <div className="px-6 py-3 bg-muted/20 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground font-mono">
-                    <div className="flex items-center gap-4">
-                      <span>{stats.words} words</span>
-                      <span>{stats.chars} characters</span>
-                      <span>Estimated {stats.estimatedMinutes} min read</span>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground/60 hidden sm:block">
-                      Shortcuts: Ctrl+B (Bold) • Ctrl+I (Italic) • Ctrl+U (Underline)
-                    </div>
-                  </div>
-                </div>
-              </div>
   );
 
-  const renderLivePreviewCard = () => (
-            <div className="bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 max-h-[850px] overflow-y-auto">
-              <div className="flex items-center justify-between pb-3 border-b border-border/50">
-                <div className="flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-cornflower-400" />
-                  <span className="font-bold text-xs uppercase tracking-wider text-foreground">Live Reader Preview</span>
-                </div>
-                <Badge variant="outline" className="text-[10px] font-mono">Auto-Syncing</Badge>
-              </div>
+  const renderEditorCard = (heightClass = "h-[750px]") => (
+    <div className={`bg-card border border-border/60 rounded-3xl overflow-hidden shadow-sm flex flex-col ${heightClass}`}>
+      {/* Rich Formatting Toolbar - Docked at top */}
+      <div className="p-3 bg-muted/80 dark:bg-muted/40 border-b border-border/70 flex flex-wrap items-center gap-1.5 shrink-0 z-10 w-full">
+        {/* Headings */}
+        <div className="flex items-center gap-0.5 pr-1 border-r border-border/60">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('formatBlock', '<h1>')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Heading 1"
+          >
+            <Heading1 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('formatBlock', '<h2>')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Heading 2"
+          >
+            <Heading2 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('formatBlock', '<h3>')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Heading 3"
+          >
+            <Heading3 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('formatBlock', '<p>')}
+            className="h-8 px-2 text-xs font-bold rounded-lg hover:bg-background"
+            title="Paragraph"
+          >
+            P
+          </Button>
+        </div>
 
-              {coverImage && (
-                <div className="rounded-xl overflow-hidden border border-border shadow-sm max-h-[240px]">
-                  <img src={coverImage} alt={title} className="w-full h-full object-cover" />
-                </div>
-              )}
+        {/* Inline Formatting */}
+        <div className="flex items-center gap-0.5 px-1 border-r border-border/60">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('bold')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Bold (Ctrl+B)"
+          >
+            <Bold className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('italic')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Italic (Ctrl+I)"
+          >
+            <Italic className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('underline')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Underline (Ctrl+U)"
+          >
+            <Underline className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('strikeThrough')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Strikethrough"
+          >
+            <Strikethrough className="w-4 h-4" />
+          </Button>
+        </div>
 
-              <div>
-                <h2 className="text-2xl font-black text-foreground">{title || 'Untitled Article'}</h2>
-                {excerpt && <p className="text-sm text-muted-foreground italic mt-2">{excerpt}</p>}
-              </div>
+        {/* Lists & Quotes */}
+        <div className="flex items-center gap-0.5 px-1 border-r border-border/60">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('insertUnorderedList')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Bullet List"
+          >
+            <List className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('insertOrderedList')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Numbered List"
+          >
+            <ListOrdered className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('formatBlock', '<blockquote>')}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Quote"
+          >
+            <Quote className="w-4 h-4" />
+          </Button>
+        </div>
 
-              <div className={blogStyles.prose}>
-                <div dangerouslySetInnerHTML={{ __html: normalizedContent }} />
-              </div>
-            </div>
+        {/* Media & Embeds */}
+        <div className="flex items-center gap-0.5 px-1 border-r border-border/60">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleInsertLink}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Insert Link"
+          >
+            <Link2 className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleInsertImage}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Insert Image"
+          >
+            <ImageIcon className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleInsertCodeBlock}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background font-mono text-xs"
+            title="Insert Code Block"
+          >
+            <Code className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleInsertCallout}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Insert Writer Callout Note"
+          >
+            <Sparkles className="w-4 h-4 text-cornflower-500" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={handleInsertTable}
+            className="h-8 w-8 p-0 rounded-lg hover:bg-background"
+            title="Insert Table"
+          >
+            <Table className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => execCmd('insertHorizontalRule')}
+            className="h-8 px-1.5 text-xs font-mono rounded-lg hover:bg-background"
+            title="Horizontal Divider"
+          >
+            —
+          </Button>
+        </div>
+
+        {/* HTML Source Mode Toggle */}
+        <div className="flex items-center gap-1 pl-1 ml-auto">
+          <Button
+            type="button"
+            variant={isHtmlMode ? 'default' : 'ghost'}
+            size="sm"
+            onClick={handleToggleHtmlMode}
+            className={`h-8 px-2.5 text-xs font-mono rounded-lg gap-1.5 transition-all ${
+              isHtmlMode
+                ? 'bg-cornflower-500/20 text-cornflower-400 border border-cornflower-500/30'
+                : 'hover:bg-background text-cornflower-500'
+            }`}
+            title="Toggle Raw HTML Source Code Mode"
+          >
+            <FileCode className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{isHtmlMode ? 'Visual Editor' : 'HTML Code'}</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Scrollable Text Area Container */}
+      <div className="flex-1 overflow-y-auto">
+        {isHtmlMode ? (
+          <Textarea
+            value={contentHtml}
+            onChange={handleHtmlSourceChange}
+            className="p-6 sm:p-8 min-h-full h-full font-mono text-sm leading-relaxed border-none focus-visible:ring-0 bg-slate-950 text-slate-100 resize-none rounded-none w-full"
+            placeholder="<p>Write or paste your raw HTML code here...</p>"
+          />
+        ) : (
+          <div
+            ref={editorRef}
+            contentEditable
+            onInput={handleEditorInput}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            className="p-6 sm:p-10 min-h-full w-full focus:outline-none focus:ring-0 leading-relaxed font-sans text-[16px] text-foreground prose dark:prose-invert max-w-none prose-headings:font-bold prose-a:text-foreground prose-a:underline prose-a:underline-offset-4 prose-a:decoration-primary/60 hover:prose-a:text-primary prose-code:before:content-none prose-code:after:content-none prose-blockquote:border-l-4 prose-blockquote:border-cornflower-500 prose-blockquote:pl-4 prose-pre:bg-slate-950 prose-pre:rounded-xl prose-pre:p-4 bg-background/20"
+            suppressContentEditableWarning={true}
+          />
+        )}
+      </div>
+
+      {/* Footer Word Count Bar - Docked at bottom */}
+      <div className="px-6 py-3 bg-muted/20 border-t border-border/40 flex items-center justify-between text-xs text-muted-foreground font-mono shrink-0">
+        <div className="flex items-center gap-4">
+          <span>{stats.words} words</span>
+          <span>{stats.chars} characters</span>
+          <span>Estimated {stats.estimatedMinutes} min read</span>
+        </div>
+        <div className="text-[11px] text-muted-foreground/60 hidden sm:block">
+          Shortcuts: Ctrl+B (Bold) • Ctrl+I (Italic) • Ctrl+U (Underline)
+        </div>
+      </div>
+    </div>
+  );
+
+  const renderLivePreviewCard = (heightClass = "h-[750px]") => (
+    <div className={`bg-card border border-border/60 rounded-3xl p-6 sm:p-8 shadow-sm space-y-6 ${heightClass} overflow-y-auto`}>
+      <div className="flex items-center justify-between pb-3 border-b border-border/50 shrink-0">
+        <div className="flex items-center gap-2">
+          <Eye className="w-4 h-4 text-cornflower-400" />
+          <span className="font-bold text-xs uppercase tracking-wider text-foreground">Live Reader Preview</span>
+        </div>
+        <Badge variant="outline" className="text-[10px] font-mono">Auto-Syncing</Badge>
+      </div>
+
+      {coverImage && (
+        <div className="rounded-xl overflow-hidden border border-border shadow-sm max-h-[240px] shrink-0">
+          <img src={coverImage} alt={title} className="w-full h-full object-cover" />
+        </div>
+      )}
+
+      <div className="shrink-0">
+        <h2 className="text-2xl font-black text-foreground">{title || 'Untitled Article'}</h2>
+        {excerpt && <p className="text-sm text-muted-foreground italic mt-2">{excerpt}</p>}
+      </div>
+
+      <div className={blogStyles.prose}>
+        <div dangerouslySetInnerHTML={{ __html: normalizedContent }} />
+      </div>
+    </div>
   );
 
   const renderPublicationSettings = () => (
@@ -1218,16 +1180,14 @@ export default function WriterBlogEditor() {
         )}
 
         {viewMode === 'split' && (
-          <div className="space-y-8">
-            {/* Top: 2-Column Side-by-Side Studio */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-              {/* Left Column: Writing Canvas */}
-              <div className="space-y-4">
-                {renderWritingCanvas()}
-              </div>
+          <div className="space-y-6">
+            {/* Top: Title & Excerpt Input Card */}
+            {renderTitleAndSummaryCard()}
 
-              {/* Right Column: Live Reader Preview */}
-              {renderLivePreviewCard()}
+            {/* Studio: Side-by-Side Editor & Live Preview of exact same height */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+              {renderEditorCard("h-[750px]")}
+              {renderLivePreviewCard("h-[750px]")}
             </div>
 
             {/* Bottom: Article Settings & Metadata Section */}
@@ -1257,8 +1217,9 @@ export default function WriterBlogEditor() {
         {viewMode === 'write' && (
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
             {/* Left: Writing Canvas (8 cols) */}
-            <div className="lg:col-span-8 space-y-4">
-              {renderWritingCanvas()}
+            <div className="lg:col-span-8 space-y-6">
+              {renderTitleAndSummaryCard()}
+              {renderEditorCard("min-h-[580px] max-h-[750px]")}
             </div>
 
             {/* Right: Settings Sidebar (4 cols) */}
