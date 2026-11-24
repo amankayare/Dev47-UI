@@ -61,6 +61,18 @@ function MainDomainPostRedirect({ id }: { id: string }) {
   return <DelayedContent fullScreen><div /></DelayedContent>;
 }
 
+function AdminBlogsNewRoute() {
+  const u = getCurrentUser();
+  const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
+  return <BlogEditor isWriterMode={!isPureAdmin} />;
+}
+
+function AdminBlogsEditRoute() {
+  const u = getCurrentUser();
+  const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
+  return <BlogEditor isWriterMode={!isPureAdmin} />;
+}
+
 function App() {
   const isSubdomain = isDev47Subdomain();
   const isProdMainDomain = typeof window !== 'undefined' && 
@@ -91,20 +103,8 @@ function App() {
                     return <DelayedContent><BlogsManagement isWriterMode={!isPureAdmin} /></DelayedContent>;
                   }}
                 </Route>
-                <Route path="/admin/blogs/new">
-                  {() => {
-                    const u = getCurrentUser();
-                    const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
-                    return <DelayedContent><BlogEditor isWriterMode={!isPureAdmin} /></DelayedContent>;
-                  }}
-                </Route>
-                <Route path="/admin/blogs/edit/:id">
-                  {() => {
-                    const u = getCurrentUser();
-                    const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
-                    return <DelayedContent><BlogEditor isWriterMode={!isPureAdmin} /></DelayedContent>;
-                  }}
-                </Route>
+                <Route path="/admin/blogs/new" component={AdminBlogsNewRoute} />
+                <Route path="/admin/blogs/edit/:id" component={AdminBlogsEditRoute} />
               <Route path="/admin/certifications">{() => <DelayedContent><CertificationsManagement /></DelayedContent>}</Route>
               <Route path="/admin/about">{() => <DelayedContent><AboutManagement /></DelayedContent>}</Route>
               <Route path="/admin/experience">{() => <DelayedContent><ExperienceManagement /></DelayedContent>}</Route>

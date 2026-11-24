@@ -21,6 +21,7 @@ import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import ImageInput from '@/components/ui/ImageInput';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
 import { useDeleteConfirmation } from '@/hooks/useDeleteConfirmation';
+import { cn } from '@/lib/utils';
 
 interface Blog {
   id: number;
@@ -77,11 +78,26 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
     quick_links: []
   });
 
+  const draftStorageKey = isEditing ? `dev47_blog_ai_draft_${id}` : 'dev47_blog_ai_draft_new';
+
   const [activeTab, setActiveTab] = useState('draft');
-  const [aiDraft, setAiDraft] = useState('');
+  const [aiDraft, setAiDraft] = useState(() => {
+    try {
+      return sessionStorage.getItem(draftStorageKey) || '';
+    } catch {
+      return '';
+    }
+  });
   const [aiPrompt, setAiPrompt] = useState('');
   const [aiPromptLoaded, setAiPromptLoaded] = useState(false);
   const { isConverting, error: aiError, convert, reset: resetAI } = useAIConvert();
+
+  const handleDraftChange = (newDraft: string) => {
+    setAiDraft(newDraft);
+    try {
+      sessionStorage.setItem(draftStorageKey, newDraft);
+    } catch {}
+  };
 
   const [stagingId, setStagingId] = useState<string | null>(null);
   const [selectedProvider, setSelectedProvider] = useState('github');
@@ -162,6 +178,9 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
       return apiPost('/api/blogs/', payload);
     },
     onSuccess: () => {
+      try {
+        sessionStorage.removeItem(draftStorageKey);
+      } catch {}
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
       toast({ title: 'Success', description: 'Blog created successfully.' });
       setLocation(isWriterRoute ? '/writer/blogs' : '/admin/blogs');
@@ -181,6 +200,9 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
       return apiPut(`/api/blogs/${id}`, payload);
     },
     onSuccess: () => {
+      try {
+        sessionStorage.removeItem(draftStorageKey);
+      } catch {}
       queryClient.invalidateQueries({ queryKey: ['/api/blogs/admin'] });
       toast({ title: 'Success', description: 'Blog updated successfully.' });
       setLocation(isWriterRoute ? '/writer/blogs' : '/admin/blogs');
@@ -222,8 +244,14 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
   };
 
   const handleAIConvert = async (rawText: string, customPrompt?: string) => {
+    // Retain user draft content in both state and persistent session storage
+    handleDraftChange(rawText);
+
     const result = await convert(rawText, customPrompt);
     if (!result) return;
+
+    // Retain user draft content so it remains when navigating back to draft tab
+    handleDraftChange(rawText);
 
     setFormData(prev => ({
       ...prev,
@@ -452,12 +480,16 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="draft" className="mt-0 focus-visible:outline-none">
+                <TabsContent 
+                  value="draft" 
+                  forceMount 
+                  className={cn("mt-0 focus-visible:outline-none", activeTab !== 'draft' && 'hidden')}
+                >
                   <AIContentDraft
                     isConverting={isConverting}
                     onConvert={handleAIConvert}
                     draft={aiDraft}
-                    onDraftChange={setAiDraft}
+                    onDraftChange={handleDraftChange}
                     customPrompt={aiPrompt}
                     onCustomPromptChange={setAiPrompt}
                     promptLoaded={aiPromptLoaded}
@@ -470,7 +502,11 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
                   )}
                 </TabsContent>
 
-                <TabsContent value="html" className="mt-0 focus-visible:outline-none">
+                <TabsContent 
+                  value="html" 
+                  forceMount 
+                  className={cn("mt-0 focus-visible:outline-none", activeTab !== 'html' && 'hidden')}
+                >
                   <div className="border-2 border-cornflower-200/50 dark:border-cornflower-500/10 rounded-2xl overflow-hidden bg-cornflower-50/30 dark:bg-black/30 backdrop-blur-md">
                     <HtmlCodeEditor
                       value={formData.content}
