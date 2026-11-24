@@ -33,6 +33,26 @@
   <!-- Canonical URL -->
   <link rel="canonical" href="https://amankayare.com" />
 
+  <!-- Pre-hydration Theme Resolution -->
+  <script>
+    (function() {
+      try {
+        var path = window.location.pathname;
+        var key = path.startsWith('/writer')
+          ? 'vs-writer-theme'
+          : (path.startsWith('/admin') ? 'vs-admin-theme' : 'vs-portfolio-theme');
+        var saved = localStorage.getItem(key) || localStorage.getItem('vs-portfolio-theme');
+        var theme = saved || 'dark';
+        if (theme === 'system') {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(theme);
+        document.documentElement.setAttribute('data-theme', theme);
+      } catch (e) {}
+    })();
+  </script>
+
   <!-- Preconnect to external domains -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

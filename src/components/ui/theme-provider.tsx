@@ -22,6 +22,23 @@ const initialState: ThemeProviderState = {
 
 const ThemeProviderContext = createContext<ThemeProviderState>(initialState)
 
+function getEffectiveInitialTheme(storageKey: string, defaultTheme: Theme): Theme {
+  if (typeof window === "undefined") return defaultTheme;
+  try {
+    const path = window.location.pathname;
+    let effectiveKey = storageKey;
+    if (storageKey === "vs-portfolio-theme") {
+      if (path.startsWith("/writer")) effectiveKey = "vs-writer-theme";
+      else if (path.startsWith("/admin")) effectiveKey = "vs-admin-theme";
+    }
+    const saved = localStorage.getItem(effectiveKey) || localStorage.getItem("vs-portfolio-theme");
+    if (saved === "dark" || saved === "light" || saved === "system") {
+      return saved as Theme;
+    }
+  } catch {}
+  return defaultTheme;
+}
+
 export function ThemeProvider({
   children,
   defaultTheme = "system",
@@ -30,7 +47,7 @@ export function ThemeProvider({
   ...props
 }: ThemeProviderProps) {
   const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
+    () => getEffectiveInitialTheme(storageKey, defaultTheme)
   )
 
   useEffect(() => {
@@ -42,15 +59,15 @@ export function ThemeProvider({
       : theme
 
     if (scoped) {
-      // Admin mode: save the current portfolio theme class so we can restore it on unmount
+      // Save current class so we can restore on unmount if needed
       const prevLight = root.classList.contains("light")
       const prevDark = root.classList.contains("dark")
 
       root.classList.remove("light", "dark")
       root.classList.add(resolvedTheme)
+      root.setAttribute("data-theme", resolvedTheme)
 
       return () => {
-        // Restore portfolio theme on admin unmount
         root.classList.remove("light", "dark")
         if (prevDark) root.classList.add("dark")
         else if (prevLight) root.classList.add("light")
@@ -58,6 +75,7 @@ export function ThemeProvider({
     } else {
       root.classList.remove("light", "dark")
       root.classList.add(resolvedTheme)
+      root.setAttribute("data-theme", resolvedTheme)
     }
   }, [theme, scoped])
 

@@ -47,7 +47,7 @@ export function DelayedContent({
       <div 
         className={cn(
           fullScreen 
-            ? 'fixed inset-0 z-50 w-screen h-screen' 
+            ? 'fixed inset-0 z-50 w-screen h-screen bg-background' 
             : 'relative w-full h-full min-h-[200px]',
           'flex items-center justify-center',
           className

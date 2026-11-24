@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { LogOut, ArrowLeft, Sun, Moon, User, ChevronDown, Settings, BookOpen, PenTool, LayoutDashboard } from 'lucide-react';
 import { ThemeProvider, useTheme } from '@/components/ui/theme-provider';
+import { Loader } from '@/components/ui/loader';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -150,9 +151,7 @@ function WriterLayoutContent({ children, title, backTo = '/profile' }: WriterLay
 
   if (isVerifying || !currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-background via-card to-secondary flex items-center justify-center">
-        <div className="w-10 h-10 border-4 border-cornflower-500 border-t-transparent rounded-full animate-spin"></div>
-      </div>
+      <Loader size="xl" fullScreen text="Verifying writer credentials..." />
     );
   }
 
