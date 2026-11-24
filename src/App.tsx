@@ -27,6 +27,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ui/theme-provider";
 import { DelayedContent } from "@/components/ui/DelayedContent";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
+import { getCurrentUser } from "@/utils/authSession";
 
 // Lazy load admin components with Suspense
 export const withSuspense = (Component: React.ComponentType) => {
@@ -69,48 +71,40 @@ function App() {
       <ThemeProvider defaultTheme="dark" storageKey="vs-portfolio-theme">
         <TooltipProvider>
           <Toaster />
-          <Suspense fallback={<DelayedContent fullScreen><div /></DelayedContent>}>
-            <Switch>
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route path="/forgot-password" component={ForgotPassword} />
-              <Route path="/reset-password/:token" component={ResetPassword} />
-              <Route path="/profile" component={UserProfile} />
-              <Route path="/writer/blogs">{() => <DelayedContent><BlogsManagement isWriterMode={true} /></DelayedContent>}</Route>
-              <Route path="/writer/blogs/new">{() => <DelayedContent><WriterBlogEditor /></DelayedContent>}</Route>
-              <Route path="/writer/blogs/edit/:id">{() => <DelayedContent><WriterBlogEditor /></DelayedContent>}</Route>
-              <Route path="/admin" component={AdminDashboard} />
-              <Route path="/admin/projects">{() => <DelayedContent><ProjectsManagement /></DelayedContent>}</Route>
-              <Route path="/admin/blogs">
-                {() => {
-                  let isPureAdmin = false;
-                  try {
-                    const u = JSON.parse(localStorage.getItem('user') || '{}');
-                    isPureAdmin = Boolean(u.is_admin || u.role === 'admin');
-                  } catch {}
-                  return <DelayedContent><BlogsManagement isWriterMode={!isPureAdmin} /></DelayedContent>;
-                }}
-              </Route>
-              <Route path="/admin/blogs/new">
-                {() => {
-                  let isPureAdmin = false;
-                  try {
-                    const u = JSON.parse(localStorage.getItem('user') || '{}');
-                    isPureAdmin = Boolean(u.is_admin || u.role === 'admin');
-                  } catch {}
-                  return <DelayedContent>{isPureAdmin ? <BlogEditor isWriterMode={false} /> : <WriterBlogEditor />}</DelayedContent>;
-                }}
-              </Route>
-              <Route path="/admin/blogs/edit/:id">
-                {() => {
-                  let isPureAdmin = false;
-                  try {
-                    const u = JSON.parse(localStorage.getItem('user') || '{}');
-                    isPureAdmin = Boolean(u.is_admin || u.role === 'admin');
-                  } catch {}
-                  return <DelayedContent>{isPureAdmin ? <BlogEditor isWriterMode={false} /> : <WriterBlogEditor />}</DelayedContent>;
-                }}
-              </Route>
+          <ErrorBoundary>
+            <Suspense fallback={<DelayedContent fullScreen><div /></DelayedContent>}>
+              <Switch>
+                <Route path="/login" component={Login} />
+                <Route path="/register" component={Register} />
+                <Route path="/forgot-password" component={ForgotPassword} />
+                <Route path="/reset-password/:token" component={ResetPassword} />
+                <Route path="/profile" component={UserProfile} />
+                <Route path="/writer/blogs">{() => <DelayedContent><BlogsManagement isWriterMode={true} /></DelayedContent>}</Route>
+                <Route path="/writer/blogs/new">{() => <DelayedContent><WriterBlogEditor /></DelayedContent>}</Route>
+                <Route path="/writer/blogs/edit/:id">{() => <DelayedContent><WriterBlogEditor /></DelayedContent>}</Route>
+                <Route path="/admin" component={AdminDashboard} />
+                <Route path="/admin/projects">{() => <DelayedContent><ProjectsManagement /></DelayedContent>}</Route>
+                <Route path="/admin/blogs">
+                  {() => {
+                    const u = getCurrentUser();
+                    const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
+                    return <DelayedContent><BlogsManagement isWriterMode={!isPureAdmin} /></DelayedContent>;
+                  }}
+                </Route>
+                <Route path="/admin/blogs/new">
+                  {() => {
+                    const u = getCurrentUser();
+                    const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
+                    return <DelayedContent><BlogEditor isWriterMode={!isPureAdmin} /></DelayedContent>;
+                  }}
+                </Route>
+                <Route path="/admin/blogs/edit/:id">
+                  {() => {
+                    const u = getCurrentUser();
+                    const isPureAdmin = Boolean(u?.is_admin || u?.role === 'admin');
+                    return <DelayedContent><BlogEditor isWriterMode={!isPureAdmin} /></DelayedContent>;
+                  }}
+                </Route>
               <Route path="/admin/certifications">{() => <DelayedContent><CertificationsManagement /></DelayedContent>}</Route>
               <Route path="/admin/about">{() => <DelayedContent><AboutManagement /></DelayedContent>}</Route>
               <Route path="/admin/experience">{() => <DelayedContent><ExperienceManagement /></DelayedContent>}</Route>
@@ -145,6 +139,7 @@ function App() {
               <Route component={NotFound} />
             </Switch>
           </Suspense>
+        </ErrorBoundary>
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

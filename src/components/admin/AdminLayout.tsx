@@ -8,7 +8,8 @@ import { ThemeProvider, useTheme } from '@/components/ui/theme-provider';
 import { ProfileModal } from './ProfileModal';
 import { apiUrl } from '@/utils/api';
 import { isDev47Subdomain } from '@/utils/urlUtils';
-import { logoutSession, clearAuthSession } from '@/utils/authSession';
+import { logoutSession, clearAuthSession, getCurrentUser } from '@/utils/authSession';
+import { Loader } from '@/components/ui/loader';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -52,7 +53,8 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { theme, setTheme } = useTheme();
-  const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [currentUser, setCurrentUser] = useState<User | null>(() => getCurrentUser() as User | null);
+  const [isVerifying, setIsVerifying] = useState(!currentUser);
   const [profileModalOpen, setProfileModalOpen] = useState(false);
 
   useEffect(() => {
@@ -63,6 +65,7 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
       const user = localStorage.getItem('user');
       
       if (!token || !user) {
+        clearAuthSession();
         setLocation('/login');
         return;
       }
@@ -71,6 +74,7 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
       try {
         userData = JSON.parse(user);
       } catch {
+        clearAuthSession();
         setLocation('/login');
         return;
       }
@@ -103,6 +107,15 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
       if (!isAdmin) {
         const path = (window.location.pathname || '').replace(/\/+$/, '');
         if (isWriter) {
+          // If the page explicitly permits writer access (like BlogEditor), do not redirect
+          if (allowWriter) {
+            if (isMounted) {
+              setCurrentUser(userData);
+              setIsVerifying(false);
+            }
+            return;
+          }
+
           if (path === '/admin/blogs') {
             setLocation('/writer/blogs');
             return;
@@ -117,14 +130,12 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
             return;
           }
 
-          if (!allowWriter) {
-            toast({
-              title: 'Admin Privileges Required',
-              description: 'Redirected to your Creator Studio.',
-            });
-            setLocation('/writer/blogs');
-            return;
-          }
+          toast({
+            title: 'Admin Privileges Required',
+            description: 'Redirected to your Creator Studio.',
+          });
+          setLocation('/writer/blogs');
+          return;
         } else {
           toast({
             title: 'Access Denied',
@@ -138,6 +149,7 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
 
       if (isMounted) {
         setCurrentUser(userData);
+        setIsVerifying(false);
       }
     }
 
@@ -152,7 +164,11 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
     logoutSession();
   };
 
-  if (!currentUser) return null;
+  if (isVerifying || !currentUser) {
+    return (
+      <Loader size="xl" fullScreen text="Connecting to Admin Mainframe..." />
+    );
+  }
 
   const isAdmin = Boolean(currentUser.is_admin || currentUser.role === 'admin');
   const defaultBlogsRoute = isDev47Subdomain() ? '/' : '/blogs';

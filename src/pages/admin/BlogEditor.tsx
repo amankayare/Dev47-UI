@@ -16,6 +16,7 @@ import WriterLayout from '@/components/writer/WriterLayout';
 import { useAIConvert } from '@/hooks/useAIConvert';
 import { AIContentDraft } from '@/components/ui/AIContentDraft';
 import { apiGet, apiPost, apiPut, apiDelete, apiUrl } from '@/utils/api';
+import { getCurrentUser } from '@/utils/authSession';
 import { CategoryDropdown } from '@/components/ui/CategoryDropdown';
 import ImageInput from '@/components/ui/ImageInput';
 import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
@@ -59,14 +60,7 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
   const queryClient = useQueryClient();
   const [location, setLocation] = useLocation();
 
-  const [currentUser] = useState<any>(() => {
-    try {
-      const u = localStorage.getItem('user');
-      return u ? JSON.parse(u) : null;
-    } catch {
-      return null;
-    }
-  });
+  const [currentUser] = useState<any>(() => getCurrentUser());
   const isAdmin = Boolean(currentUser?.is_admin || currentUser?.role === 'admin');
   const isWriterRoute = Boolean(isWriterMode || location.startsWith('/writer') || !isAdmin);
   
@@ -102,8 +96,12 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
     async function fetchCategories() {
       try {
         const res = await fetch(apiUrl('/api/blog-categories'));
-        const data = await res.json();
-        setCategories(data);
+        if (res.ok) {
+          const data = await res.json();
+          setCategories(Array.isArray(data) ? data : []);
+        } else {
+          setCategories([]);
+        }
       } catch (err) {
         setCategories([]);
       }
@@ -387,7 +385,10 @@ export default function BlogEditor({ isWriterMode }: { isWriterMode?: boolean } 
                     <CategoryDropdown
                       categories={categories}
                       selectedId={formData.category_id || ''}
-                      onSelect={catId => setFormData(f => ({ ...f, category_id: catId }))}
+                      onSelect={catId => setFormData(f => ({
+                        ...f,
+                        category_id: typeof catId === 'string' ? (parseInt(catId, 10) || undefined) : catId
+                      }))}
                       onDelete={catId => categoryDeleteConfirmation.openConfirmDialog(categories.find(cat => cat.id === catId))}
                       disabled={addingCategory}
                     />

@@ -17,7 +17,7 @@ export interface AIConversionResult {
 interface UseAIConvertReturn {
   isConverting: boolean;
   error: string | null;
-  convert: (rawText: string) => Promise<AIConversionResult | null>;
+  convert: (rawText: string, customPrompt?: string) => Promise<AIConversionResult | null>;
   reset: () => void;
 }
 
