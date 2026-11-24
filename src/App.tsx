@@ -1,6 +1,6 @@
-import { Route, Switch } from "wouter";
+import { useEffect, lazy, Suspense } from "react";
+import { Route, Switch, useLocation } from "wouter";
 import NotFound from "@/pages/not-found.tsx";
-import { lazy, Suspense } from "react";
 import Portfolio from "@/components/Portfolio";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register"; 
@@ -10,6 +10,7 @@ import BlogHome from "@/pages/BlogHome";
 import UserProfile from "@/pages/UserProfile";
 import ForgotPassword from "@/pages/ForgotPassword";
 import ResetPassword from "@/pages/ResetPassword";
+import { isDev47Subdomain } from "@/utils/urlUtils";
 
 // Lazy load admin pages
 const ProjectsManagement = lazy(() => import("./pages/admin/ProjectsManagement"));
@@ -36,7 +37,33 @@ export const withSuspense = (Component: React.ComponentType) => {
   );
 };
 
+function SubdomainBlogsRedirect() {
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    setLocation(`/${window.location.search}`);
+  }, [setLocation]);
+  return <BlogHome />;
+}
+
+function MainDomainBlogsRedirect() {
+  useEffect(() => {
+    window.location.replace(`https://dev47.amankayare.com/${window.location.search}`);
+  }, []);
+  return <DelayedContent fullScreen><div /></DelayedContent>;
+}
+
+function MainDomainPostRedirect({ id }: { id: string }) {
+  useEffect(() => {
+    window.location.replace(`https://dev47.amankayare.com/blog/${id}${window.location.search}`);
+  }, [id]);
+  return <DelayedContent fullScreen><div /></DelayedContent>;
+}
+
 function App() {
+  const isSubdomain = isDev47Subdomain();
+  const isProdMainDomain = typeof window !== 'undefined' && 
+    (window.location.hostname === 'amankayare.com' || window.location.hostname === 'www.amankayare.com');
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="dark" storageKey="vs-portfolio-theme">
@@ -88,9 +115,33 @@ function App() {
               <Route path="/admin/about">{() => <DelayedContent><AboutManagement /></DelayedContent>}</Route>
               <Route path="/admin/experience">{() => <DelayedContent><ExperienceManagement /></DelayedContent>}</Route>
               <Route path="/admin/technical-skills">{() => <DelayedContent><TechnicalSkillsManagement /></DelayedContent>}</Route>
-              <Route path="/blog/:id" component={BlogPost} />
-              <Route path="/blogs" component={BlogHome} />
-              <Route path="/" component={Portfolio} />
+              <Route path="/blog/:id">
+                {(params) => {
+                  if (isProdMainDomain) {
+                    return <MainDomainPostRedirect id={params.id} />;
+                  }
+                  return <BlogPost />;
+                }}
+              </Route>
+              <Route path="/blogs">
+                {() => {
+                  if (isSubdomain) {
+                    return <SubdomainBlogsRedirect />;
+                  }
+                  if (isProdMainDomain) {
+                    return <MainDomainBlogsRedirect />;
+                  }
+                  return <BlogHome />;
+                }}
+              </Route>
+              <Route path="/">
+                {() => {
+                  if (isSubdomain) {
+                    return <BlogHome />;
+                  }
+                  return <Portfolio />;
+                }}
+              </Route>
               <Route component={NotFound} />
             </Switch>
           </Suspense>

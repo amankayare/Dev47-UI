@@ -14,6 +14,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { apiUrl } from '@/utils/api';
+import { isDev47Subdomain } from '@/utils/urlUtils';
 
 interface UserData {
   id: number;
@@ -227,7 +228,7 @@ function WriterLayoutContent({ children, title, backTo = '/profile' }: WriterLay
                   </DropdownMenuItem>
 
                   <DropdownMenuItem 
-                    onClick={() => setLocation('/blogs')} 
+                    onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')} 
                     className="cursor-pointer rounded-2xl hover:bg-cornflower-500/10 dark:hover:bg-cornflower-500/10 transition-colors p-3 mb-1"
                   >
                     <div className="flex items-center justify-center w-9 h-9 rounded-full bg-cornflower-500/10 text-cornflower-600 dark:text-cornflower-300 mr-3 shadow-inner">
@@ -338,7 +339,7 @@ function WriterLayoutContent({ children, title, backTo = '/profile' }: WriterLay
                   </DropdownMenuItem>
 
                   <DropdownMenuItem 
-                    onClick={() => setLocation('/blogs')} 
+                    onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')} 
                     className="cursor-pointer rounded-2xl hover:bg-cornflower-500/10 dark:hover:bg-cornflower-500/10 transition-colors p-3 mb-1"
                   >
                     <div className="flex items-center justify-center w-9 h-9 rounded-full bg-cornflower-500/10 text-cornflower-600 dark:text-cornflower-300 mr-3 shadow-inner">

@@ -7,6 +7,7 @@ import { LogOut, ArrowLeft, Sun, Moon, User, ChevronDown, Settings } from 'lucid
 import { ThemeProvider, useTheme } from '@/components/ui/theme-provider';
 import { ProfileModal } from './ProfileModal';
 import { apiUrl } from '@/utils/api';
+import { isDev47Subdomain } from '@/utils/urlUtils';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -157,7 +158,8 @@ function AdminLayoutContent({ children, title, backTo, allowWriter }: AdminLayou
   if (!currentUser) return null;
 
   const isAdmin = Boolean(currentUser.is_admin || currentUser.role === 'admin');
-  const effectiveBackTo = (!isAdmin && backTo === '/admin#content') ? '/blogs' : (backTo || '/blogs');
+  const defaultBlogsRoute = isDev47Subdomain() ? '/' : '/blogs';
+  const effectiveBackTo = (!isAdmin && backTo === '/admin#content') ? defaultBlogsRoute : (backTo || defaultBlogsRoute);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-secondary transition-colors duration-700 admin-theme-scope">

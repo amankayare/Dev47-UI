@@ -19,6 +19,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { apiAssetUrl, apiUrl } from '@/utils/api';
 import { useBookmarks } from '@/hooks/useBookmarks';
+import { isDev47Subdomain, getBlogRootUrl, getPortfolioRootUrl } from '@/utils/urlUtils';
 
 interface BlogAuthor {
   id: number;
@@ -291,7 +292,12 @@ export default function BlogLayout({
       title: "Logged out successfully",
       description: "You have been logged out.",
     });
-    window.location.href = 'https://amankayare.com/blogs';
+    const blogRoot = getBlogRootUrl();
+    if (blogRoot.startsWith('http')) {
+      window.location.href = blogRoot;
+    } else {
+      setLocation(blogRoot);
+    }
   };
 
   // Loading state
@@ -344,7 +350,10 @@ export default function BlogLayout({
       <header className="border-b border-border/40 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 py-2 sm:p-4 flex items-center justify-between gap-2">
           {/* Logo Section */}
-          <div className="flex items-center cursor-pointer transition-transform hover:scale-105" onClick={() => setLocation('/blogs')}>
+          <div 
+            className="flex items-center cursor-pointer transition-transform hover:scale-105" 
+            onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')}
+          >
             <img
               src={theme === 'dark' ? '/logo-dark.svg' : '/logo-light.svg'}
               alt="Blog Logo"
@@ -354,6 +363,18 @@ export default function BlogLayout({
 
           {/* Right section */}
           <div className="flex items-center gap-1 sm:gap-3 lg:gap-6">
+            {/* Link back to Main Portfolio */}
+            <a
+              href={getPortfolioRootUrl()}
+              target={isDev47Subdomain() ? "_blank" : "_self"}
+              rel="noopener noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border border-border/60 text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+              title="Visit Aman's Portfolio"
+            >
+              <span>Portfolio</span>
+              <ExternalLink className="w-3 h-3 opacity-70" />
+            </a>
+
             {/* Desktop Authentication Section - Hidden on mobile */}
             {!isMobile && (
               <div className="flex items-center gap-3">
@@ -510,11 +531,21 @@ export default function BlogLayout({
                 <DropdownMenuContent align="end" side="bottom" className="w-64 bg-popover border shadow-lg">
                   {/* Navigation Items */}
                   <DropdownMenuItem
-                    onClick={() => setLocation('/blogs')}
+                    onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')}
                     className="cursor-pointer hover:bg-accent"
                   >
                     <BookOpen className="w-4 h-4 mr-2" />
                     All Blog Posts
+                  </DropdownMenuItem>
+
+                  <DropdownMenuItem
+                    onClick={() => {
+                      window.location.href = getPortfolioRootUrl();
+                    }}
+                    className="cursor-pointer hover:bg-accent"
+                  >
+                    <ExternalLink className="w-4 h-4 mr-2 text-indigo-400" />
+                    Visit Portfolio
                   </DropdownMenuItem>
 
                   <DropdownMenuSeparator />

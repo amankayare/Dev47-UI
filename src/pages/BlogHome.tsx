@@ -42,7 +42,7 @@ import { useTheme } from '@/hooks/use-theme';
 import { useToast } from '@/hooks/use-toast';
 import { useBlogs } from '@/hooks/useBlogs';
 import { apiAssetUrl, apiUrl } from '@/utils/api';
-import { normalizeImageUrl } from '@/utils/urlUtils';
+import { normalizeImageUrl, getBlogRootUrl, isDev47Subdomain } from '@/utils/urlUtils';
 
 interface Blog {
   id: number;
@@ -469,7 +469,12 @@ export default function BlogHome() {
     localStorage.removeItem('user');
     setCurrentUser(null);
     toast({ title: 'Logged Out', description: 'You have been successfully logged out.' });
-    window.location.href = 'https://amankayare.com/blogs';
+    const blogRoot = getBlogRootUrl();
+    if (blogRoot.startsWith('http')) {
+      window.location.href = blogRoot;
+    } else {
+      setLocation(blogRoot);
+    }
   };
 
   // Top featured blogs — always from the full unfiltered list

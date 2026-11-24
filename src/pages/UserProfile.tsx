@@ -46,6 +46,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { apiUrl, apiAssetUrl } from '@/utils/api';
 import { useBookmarks, BookmarkedBlog } from '@/hooks/useBookmarks';
+import { getBlogRootUrl, isDev47Subdomain } from '@/utils/urlUtils';
 
 interface UserProfileData {
   id: number;
@@ -310,7 +311,12 @@ export default function UserProfile() {
       title: 'Logged out successfully',
       description: 'You have been logged out.',
     });
-    window.location.href = 'https://amankayare.com/blogs';
+    const blogRoot = getBlogRootUrl();
+    if (blogRoot.startsWith('http')) {
+      window.location.href = blogRoot;
+    } else {
+      setLocation(blogRoot);
+    }
   };
 
   // Filter bookmarked blogs by search
@@ -344,7 +350,7 @@ export default function UserProfile() {
             <h3 className="text-xl font-bold">Error Loading Profile</h3>
             <p className="text-muted-foreground text-sm">Failed to load your account information.</p>
             <Button
-              onClick={() => setLocation('/blogs')}
+              onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')}
               className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold"
             >
               <ArrowLeft className="w-4 h-4 mr-2" />
@@ -401,7 +407,7 @@ export default function UserProfile() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setLocation('/blogs')}
+            onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')}
             className="text-cyan-400 hover:bg-cyan-500/10 font-bold rounded-full px-4"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
@@ -858,7 +864,7 @@ export default function UserProfile() {
                       </div>
                       <div className="pt-2">
                         <Button
-                          onClick={() => setLocation('/blogs')}
+                          onClick={() => setLocation(isDev47Subdomain() ? '/' : '/blogs')}
                           className="rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black font-bold gap-2 shadow-lg shadow-cyan-500/20"
                         >
                           <BookOpen className="w-4 h-4" />

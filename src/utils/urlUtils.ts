@@ -95,3 +95,57 @@ export const getGoogleDriveFallbackUrl = (url: string): string | null => {
   return `https://drive.google.com/thumbnail?id=${driveId}&sz=w2500`;
 };
 
+/**
+ * Checks if the current host is the Dev47 blog subdomain (e.g. dev47.amankayare.com
+ * or dev47.localhost during local testing). Also supports ?subdomain=dev47 for local dev.
+ */
+export const isDev47Subdomain = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname.toLowerCase();
+  if (hostname.startsWith('dev47.') || hostname === 'dev47.amankayare.com') {
+    return true;
+  }
+  if (hostname === 'localhost' || hostname === '127.0.0.1') {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subdomain') === 'dev47') return true;
+  }
+  return false;
+};
+
+/**
+ * Returns the blog root URL:
+ * On dev47.amankayare.com: '/'
+ * On amankayare.com in production: 'https://dev47.amankayare.com/'
+ * In local development (localhost): '/blogs'
+ */
+export const getBlogRootUrl = (): string => {
+  if (isDev47Subdomain()) return '/';
+  if (typeof window !== 'undefined') {
+    const hostname = window.location.hostname.toLowerCase();
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return '/blogs';
+    }
+  }
+  return 'https://dev47.amankayare.com/';
+};
+
+/**
+ * Returns the main portfolio root URL:
+ * On dev47.amankayare.com: 'https://amankayare.com/'
+ * In local development: 'http://localhost:3000/'
+ * On amankayare.com: '/'
+ */
+export const getPortfolioRootUrl = (): string => {
+  if (isDev47Subdomain()) {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname.toLowerCase();
+      if (hostname.includes('localhost') || hostname.includes('127.0.0.1')) {
+        return window.location.origin.replace(/\?.*$/, '') + '/';
+      }
+    }
+    return 'https://amankayare.com/';
+  }
+  return '/';
+};
+
+

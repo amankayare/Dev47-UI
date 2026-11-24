@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import AnimatedGreeting from "./AnimatedGreeting";
 import DynamicFeaturedProjects from "./DynamicFeaturedProjects";
+import { getBlogRootUrl } from "@/utils/urlUtils";
 
 import { z } from "zod";
 
@@ -1304,7 +1305,14 @@ const Portfolio = () => {
           <Button
             variant="default"
             size="sm"
-            onClick={() => setLocation("/blogs")}
+            onClick={() => {
+              const url = getBlogRootUrl();
+              if (url.startsWith("http")) {
+                window.location.href = url;
+              } else {
+                setLocation(url);
+              }
+            }}
             className="group relative flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 text-white px-5 py-2 h-10 rounded-xl text-sm font-black uppercase tracking-widest transition-all duration-300 shadow-lg shadow-indigo-500/25 overflow-hidden"
           >
             <FileText className="h-4 w-4" />
