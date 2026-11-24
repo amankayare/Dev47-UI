@@ -106,6 +106,29 @@ export default function WriterBlogEditor() {
   const [newLinkUrl, setNewLinkUrl] = useState('');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isSourceMode, setIsSourceMode] = useState(false);
+  const isHtmlMode = isSourceMode;
+  const setIsHtmlMode = setIsSourceMode;
+
+  const handleToggleHtmlMode = () => {
+    if (!isSourceMode && editorRef.current) {
+      setContentHtml(editorRef.current.innerHTML);
+    }
+    setIsSourceMode(prev => {
+      const next = !prev;
+      if (!next) {
+        setTimeout(() => {
+          if (editorRef.current) {
+            editorRef.current.innerHTML = contentHtml;
+          }
+        }, 0);
+      }
+      return next;
+    });
+  };
+
+  const handleHtmlSourceChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setContentHtml(e.target.value);
+  };
 
   const editorRef = useRef<HTMLDivElement>(null);
 
@@ -719,7 +742,7 @@ export default function WriterBlogEditor() {
             className="h-8 w-8 p-0 rounded-lg hover:bg-background"
             title="Insert Link"
           >
-            <Link2 className="w-4 h-4" />
+            <LinkIcon className="w-4 h-4" />
           </Button>
           <Button
             type="button"
@@ -759,7 +782,7 @@ export default function WriterBlogEditor() {
             className="h-8 w-8 p-0 rounded-lg hover:bg-background"
             title="Insert Table"
           >
-            <Table className="w-4 h-4" />
+            <TableIcon className="w-4 h-4" />
           </Button>
           <Button
             type="button"
