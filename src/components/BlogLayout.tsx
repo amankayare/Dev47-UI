@@ -753,12 +753,21 @@ export default function BlogLayout({
                             const titleWords = link.title.toLowerCase().trim().split(/[^a-z0-9]+/).filter((w) => w.length > 2);
                             if (titleWords.length > 0) {
                               const sections = Array.from(
-                                document.querySelectorAll('.blog-content section, .blog-content div, .blog-content p')
+                                document.querySelectorAll('.blog-content section, .blog-content div, .blog-content p, .blog-content h2, .blog-content h3')
                               ) as HTMLElement[];
-                              element = sections.find((el) => {
+                              let bestSecScore = 0;
+                              let bestSecEl: HTMLElement | null = null;
+                              for (const el of sections) {
                                 const text = (el.textContent || '').toLowerCase();
-                                return titleWords.every((w) => text.includes(w));
-                              }) || null;
+                                const score = titleWords.filter((w) => text.includes(w)).length;
+                                if (score > bestSecScore && score >= Math.min(2, Math.ceil(titleWords.length * 0.5))) {
+                                  bestSecScore = score;
+                                  bestSecEl = el;
+                                }
+                              }
+                              if (bestSecEl) {
+                                element = bestSecEl;
+                              }
                             }
                           }
 
